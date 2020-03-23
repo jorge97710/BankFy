@@ -148,10 +148,10 @@ class _LoginScreenState extends State<LoginScreen> {
             pass.text,
           ),
         ).then((value) {
-      //This makes sure the textfield is cleared after page is pushed.
-      user.clear();
-      pass.clear();
-   }),
+          //This makes sure the textfield is cleared after page is pushed.
+          user.clear();
+          pass.clear();
+        }),
         padding: EdgeInsets.all(5.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),
