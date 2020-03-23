@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'LoginScreen/login_screen.dart';
+import 'MainScreen/main_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -8,6 +9,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // Start the app with the "/" named route. In this case, the app starts
+      // on the FirstScreen widget.
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => LoginScreen(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/main': (context) => MainScreen(),
+      },
+
       // title: 'Flutter Demo',
       // theme: ThemeData(
       //   // This is the theme of your application.
@@ -21,7 +32,6 @@ class MyApp extends StatelessWidget {
       //   // is not restarted.
       //   primarySwatch: Colors.blue,
       // ),
-      home: LoginScreen(),
     );
   }
 }

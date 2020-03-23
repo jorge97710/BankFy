@@ -1,3 +1,4 @@
+import 'package:bankfyapp/MainScreen/main_screen.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final user = TextEditingController();
+  final pass = TextEditingController();
   bool _rememberMe = false;
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    user.dispose();
+    pass.dispose();
+    super.dispose();
+  }
 
   Widget _buildEmailTF() {
     return Column(
@@ -24,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: kBoxDecorationStyle,
           height: 60.0,
           child: TextField(
+            controller: user,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
               color: Colors.black,
@@ -59,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: kBoxDecorationStyle,
           height: 60.0,
           child: TextField(
+            controller: pass,
             obscureText: true,
             style: TextStyle(
               color: Colors.black,
@@ -127,7 +140,14 @@ class _LoginScreenState extends State<LoginScreen> {
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () => print('Login Button Pressed'),
+        onPressed: () => Navigator.pushNamed(
+          context,
+          '/main', 
+          arguments: ScreenArguments(
+            user.text,
+            pass.text,
+          ),
+        ),
         padding: EdgeInsets.all(5.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),
