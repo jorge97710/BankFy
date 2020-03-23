@@ -1,4 +1,5 @@
-import 'package:bankfyapp/MainScreen/main_screen.dart';
+import 'package:bankfyapp/screens/MainScreen/main_screen.dart';
+import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final user = TextEditingController();
   final pass = TextEditingController();
+  final AuthService _auth = AuthService();
   bool _rememberMe = false;
+  bool _showSignIn = true;
+
+  void toggleView() {
+    setState(() {
+      _showSignIn = !_showSignIn;
+    });  
+  }
 
   @override
   void dispose() {
@@ -140,18 +149,28 @@ class _LoginScreenState extends State<LoginScreen> {
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () => Navigator.pushNamed(
-          context,
-          '/main', 
-          arguments: ScreenArguments(
-            user.text,
-            pass.text,
-          ),
-        ).then((value) {
-          //This makes sure the textfield is cleared after page is pushed.
-          user.clear();
-          pass.clear();
-        }),
+        onPressed: () async {
+          dynamic result = await _auth.signInAnon();
+          if (result == null) {
+            print('Error signing in');
+            user.clear();
+            pass.clear();
+          } else {
+            print(result);
+            Navigator.pushNamed(
+              context,
+              '/main', 
+              arguments: ScreenArguments(
+                user.text,
+                pass.text,
+              ),
+            ).then((value) {
+              //This makes sure the textfield is cleared after page is pushed.
+              user.clear();
+              pass.clear();
+            });
+          }
+        },
         padding: EdgeInsets.all(5.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),
@@ -159,6 +178,34 @@ class _LoginScreenState extends State<LoginScreen> {
         color: Colors.black,
         child: Text(
           'Ingresar',
+          style: TextStyle(
+            color: Color(0xFF95F985),
+            letterSpacing: 1.5,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterBtn() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 25.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () {
+          this.toggleView();
+        },
+        padding: EdgeInsets.all(5.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.black,
+        child: Text(
+          'Registrar',
           style: TextStyle(
             color: Color(0xFF95F985),
             letterSpacing: 1.5,
@@ -233,7 +280,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildSingUpBtn() {
     return GestureDetector(
-      onTap: () => print('Sing Up button Pressed'),
+      onTap: () {
+        this.toggleView();
+      },
       child: RichText(
         text: TextSpan(
           children:[
@@ -261,62 +310,117 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF00AB08),
-                  Color(0xFF00C301),
-                  Color(0xFF26D701),
-                  Color(0xFF4DED30),
-                ],
-                stops: [0.1, 0.4, 0.7, 0.9]
-              )
-            ),
-          ),
-          Container(
-            height: double.infinity,
-            child: SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(
-                horizontal: 40.0,
-                vertical: 120.0,
+    if (_showSignIn) {
+      return Scaffold(
+        body: Stack(
+          children: <Widget>[
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF00AB08),
+                    Color(0xFF00C301),
+                    Color(0xFF26D701),
+                    Color(0xFF4DED30),
+                  ],
+                  stops: [0.1, 0.4, 0.7, 0.9]
+                )
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'Bankfy',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontFamily: 'OpenSans',
-                      fontSize: 30.0,
-                      fontWeight: FontWeight.bold,
+            ),
+            Container(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 120.0,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'Bankfy',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'OpenSans',
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 30.0),
-                  _buildEmailTF(),
-                  SizedBox(height: 30.0),
-                  _buildPasswordTF(),
-                  _buildForgotPasswordBtn(),
-                  _buildRememberMeCheckbox(),
-                  _buildLoginBtn(),
-                  _buildSignInWithText(),
-                  _buildButonsSignIn(),
-                  _buildSingUpBtn(),
-                ],
+                    SizedBox(height: 30.0),
+                    _buildEmailTF(),
+                    SizedBox(height: 30.0),
+                    _buildPasswordTF(),
+                    _buildForgotPasswordBtn(),
+                    _buildRememberMeCheckbox(),
+                    _buildLoginBtn(),
+                    _buildSignInWithText(),
+                    _buildButonsSignIn(),
+                    _buildSingUpBtn(),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+    } else {
+      return Scaffold(
+        body: Stack(
+          children: <Widget>[
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF00AB08),
+                    Color(0xFF00C301),
+                    Color(0xFF26D701),
+                    Color(0xFF4DED30),
+                  ],
+                  stops: [0.1, 0.4, 0.7, 0.9]
+                )
               ),
             ),
-          )
-        ],
-      ),
-    );
+            Container(
+              height: double.infinity,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 40.0,
+                  vertical: 120.0,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'Registro',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'OpenSans',
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 30.0),
+                    _buildEmailTF(),
+                    SizedBox(height: 30.0),
+                    _buildPasswordTF(),
+                    _buildRegisterBtn(),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      );      
+    }
   }
 }

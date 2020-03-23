@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "700341175005",
+    "firebase_url": "https://bankfyprueba1.firebaseio.com",
+    "project_id": "bankfyprueba1",
+    "storage_bucket": "bankfyprueba1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700341175005:android:70e46924317932df069134",
+        "android_client_info": {
+          "package_name": "com.example.bankfyapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700341175005-mkv2891psj739jlrf6oi3gfac5lajvj1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyQw_HCJu3WawybZ2O8A9X49bbGwsn0BY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700341175005-mkv2891psj739jlrf6oi3gfac5lajvj1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
