@@ -1,7 +1,6 @@
 import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:flutter/material.dart';
-import 'package:bankfyapp/utilities/constants.dart';
 import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
@@ -29,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: 
         Text(
-          user.uid,
+          user.correo,
           style: TextStyle(
             color: Colors.black  
           ),

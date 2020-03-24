@@ -11,22 +11,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   // Variables para poder manejar los textos y vistas de los inputs y ventana
-  final user = TextEditingController();
+  final email = TextEditingController();
   final pass = TextEditingController();
   final nombre = TextEditingController();
   final apellido = TextEditingController();
-  final userReg = TextEditingController();
-  final passReg = TextEditingController();
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  bool _rememberMe = false;
+  // bool _rememberMe = false;
   bool _showSignIn = true;
+  String error = '';
 
   // Funcion para cambiar la pantalla de Registro y la de Login
   void toggleView() {
     setState(() {
       _showSignIn = !_showSignIn;
+      error = '';
     });  
   }
 
@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
-    user.dispose();
+    email.dispose();
     pass.dispose();
     super.dispose();
   }
@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 60.0,
           child: TextFormField(
             validator: (value) => validateEmail(value),
-            controller: user,
+            controller: email,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
               color: Colors.black,
@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
               return null;
             },
             controller: apellido,
-            obscureText: true,
+            keyboardType: TextInputType.emailAddress,
             style: TextStyle(
               color: Colors.black,
               fontFamily: 'OpenSans'
@@ -229,48 +229,48 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Widget que define el componente para poder recuperar password
-  Widget _buildForgotPasswordBtn() {
-    return Container(
-      alignment: Alignment.centerRight,
-      child: FlatButton(
-        onPressed: () => print('Forgot Password Button Pressed'),
-        padding: EdgeInsets.only(right: 0.0),
-        child: Text(
-          '¿Olvidaste tu contraseña?',
-          style: kLabelStyle,
-        ),
-      ),
-    );
-  }
+  // // Widget que define el componente para poder recuperar password
+  // Widget _buildForgotPasswordBtn() {
+  //   return Container(
+  //     alignment: Alignment.centerRight,
+  //     child: FlatButton(
+  //       onPressed: () => print('Forgot Password Button Pressed'),
+  //       padding: EdgeInsets.only(right: 0.0),
+  //       child: Text(
+  //         '¿Olvidaste tu contraseña?',
+  //         style: kLabelStyle,
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  // Widget que define el componente de recordar usuario y contraseña
-  Widget _buildRememberMeCheckbox() {
-    return Container(
-      height: 20.0,
-      child: Row(
-        children: <Widget>[
-          Theme(
-            data: ThemeData(unselectedWidgetColor: Colors.black),
-            child: Checkbox(
-              value: _rememberMe,
-              checkColor: Colors.green,
-              activeColor: Colors.black,
-              onChanged: (value) {
-                setState(() {
-                  _rememberMe = value;
-                });
-              },
-            ),
-          ),
-          Text(
-            'Recordar usuario y contraseña',
-            style: kLabelStyle,  
-          ),
-        ],
-      ),
-    );
-  }
+  // // Widget que define el componente de recordar usuario y contraseña
+  // Widget _buildRememberMeCheckbox() {
+  //   return Container(
+  //     height: 20.0,
+  //     child: Row(
+  //       children: <Widget>[
+  //         Theme(
+  //           data: ThemeData(unselectedWidgetColor: Colors.black),
+  //           child: Checkbox(
+  //             value: _rememberMe,
+  //             checkColor: Colors.green,
+  //             activeColor: Colors.black,
+  //             onChanged: (value) {
+  //               setState(() {
+  //                 _rememberMe = value;
+  //               });
+  //             },
+  //           ),
+  //         ),
+  //         Text(
+  //           'Recordar usuario y contraseña',
+  //           style: kLabelStyle,  
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // Widget que define el componente para el boton de Login
   Widget _buildLoginBtn() {
@@ -281,10 +281,12 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5.0,
         onPressed: () async {
           if (_formKey.currentState.validate()) {
-            dynamic result = await _auth.signInAnon();
+            dynamic result = await _auth.signInWithEmailAndPassword(email.text, pass.text);
             if (result == null) {
-              print('Error signing in');
-              user.clear();
+              setState(() {
+                error = 'Correo y/o contraseña inválido';
+              });
+              email.clear();
               pass.clear();
               nombre.clear();
               apellido.clear();
@@ -294,12 +296,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 context,
                 '/main', 
                 arguments: ScreenArguments(
-                  user.text,
+                  email.text,
                   pass.text,
                 ),
               ).then((value) {
                 //This makes sure the textfield is cleared after page is pushed.
-                user.clear();
+                email.clear();
                 pass.clear();
                 nombre.clear();
                 apellido.clear();
@@ -335,13 +337,18 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5.0,
         onPressed: () async {
           if (_formKey.currentState.validate()) {
-            print(user.text);
-            print(pass.text);
-            user.clear();
-            pass.clear();
-            nombre.clear();
-            apellido.clear();
-            this.toggleView();
+            dynamic result = await _auth.registerWithEmailAndPassword(email.text, pass.text);
+            if (result == null) {
+              setState(() {
+                error = 'El correo ya está vinculado a una cuenta';
+              });
+            } else {
+              email.clear();
+              pass.clear();
+              nombre.clear();
+              apellido.clear();
+              this.toggleView();
+            }
           }
         },
         padding: EdgeInsets.all(5.0),
@@ -363,6 +370,38 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente para el boton de Back to SignIN
+  Widget _buildBackSignInBtn() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 25.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          email.clear();
+          pass.clear();
+          nombre.clear();
+          apellido.clear();
+          this.toggleView();
+        },
+        padding: EdgeInsets.all(5.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.black,
+        child: Text(
+          'Volver al ingreso',
+          style: TextStyle(
+            color: Color(0xFF95F985),
+            letterSpacing: 1.5,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
   // Widget que define el componente de Texto Auxiliar
   Widget _buildSignInWithText() {
     return Column(
@@ -514,6 +553,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           SizedBox(height: 30.0),
                           //_buildForgotPasswordBtn(),
                           //_buildRememberMeCheckbox(),
+                          SizedBox(height: 5.0),
+                          Text(
+                            error,
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 14.0,
+                              ),
+                          ),
                           _buildLoginBtn(),
                           _buildSignInWithText(),
                           _buildButonsSignIn(),
@@ -582,8 +629,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           _buildEmailTF(),
                           SizedBox(height: 30.0),
                           _buildPasswordTF(),
-                          SizedBox(height: 30.0),
+                          SizedBox(height: 5.0),
+                          Text(
+                            error,
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 14.0,
+                              ),
+                          ),
+                          SizedBox(height: 10.0),
                           _buildRegisterBtn(),
+                          _buildBackSignInBtn(),
                         ],
                       ),
                     ),
