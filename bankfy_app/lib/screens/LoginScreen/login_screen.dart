@@ -1,6 +1,7 @@
 import 'package:bankfyapp/screens/MainScreen/main_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/utilities/constants.dart';
+import 'package:bankfyapp/utilities/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // bool _rememberMe = false;
+  bool loading = false;
   bool _showSignIn = true;
   String error = '';
 
@@ -281,10 +283,14 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5.0,
         onPressed: () async {
           if (_formKey.currentState.validate()) {
+            setState(() {
+              loading = true;
+            });
             dynamic result = await _auth.signInWithEmailAndPassword(email.text, pass.text);
             if (result == null) {
               setState(() {
                 error = 'Correo y/o contraseña inválido';
+                loading = false;
               });
               email.clear();
               pass.clear();
@@ -337,10 +343,14 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5.0,
         onPressed: () async {
           if (_formKey.currentState.validate()) {
+            setState(() {
+              loading = true;
+            });
             dynamic result = await _auth.registerWithEmailAndPassword(email.text, pass.text);
             if (result == null) {
               setState(() {
                 error = 'El correo ya está vinculado a una cuenta';
+                loading = false;
               });
             } else {
               email.clear();
@@ -502,7 +512,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     if (_showSignIn) {
       // Aqui se hace la ventana de Login
-      return Scaffold(
+      return loading ? Loading() : Scaffold(
         body: Stack(
           children: <Widget>[
             Container(
@@ -577,7 +587,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       // Aqui se hace la ventana de Registro
-      return Scaffold(
+      return loading ? Loading() : Scaffold(
         body: Stack(
           children: <Widget>[
             Container(
