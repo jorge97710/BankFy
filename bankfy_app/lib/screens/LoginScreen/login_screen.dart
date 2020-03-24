@@ -49,6 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
     // Clean up the controller when the widget is disposed.
     email.dispose();
     pass.dispose();
+    nombre.dispose();
+    apellido.dispose();
     super.dispose();
   }
 
@@ -346,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen> {
             setState(() {
               loading = true;
             });
-            dynamic result = await _auth.registerWithEmailAndPassword(email.text, pass.text);
+            dynamic result = await _auth.registerWithEmailAndPassword(email.text, pass.text, nombre.text, apellido.text);
             if (result == null) {
               setState(() {
                 error = 'El correo ya está vinculado a una cuenta';

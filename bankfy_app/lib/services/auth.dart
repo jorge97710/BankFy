@@ -1,5 +1,6 @@
 import 'package:bankfyapp/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bankfyapp/services/database.dart';
 
 class AuthService {
 
@@ -39,10 +40,13 @@ class AuthService {
   }
   
   // Register with email & password
-  Future registerWithEmailAndPassword(String email, String password) async {
+  Future registerWithEmailAndPassword(String email, String password, String nombre, String apellido) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
+
+      // Crear un nuevo documento para el usuario en Firebase
+      await DatabaseService(uid: user.uid).updateUserData(nombre, apellido);
       return _userFromFirebaseUser(user);
     } catch(e) {
       print(e.toString());
