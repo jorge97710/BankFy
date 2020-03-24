@@ -1,6 +1,8 @@
+import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bankfyapp/utilities/constants.dart';
+import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -20,13 +22,14 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
+    final user = Provider.of<User>(context);
 
     return Scaffold(
       backgroundColor: Colors.green[50],
       appBar: AppBar(
         title: 
         Text(
-          'Bankfy - Bienvenido ',
+          user.uid,
           style: TextStyle(
             color: Colors.black  
           ),

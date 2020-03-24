@@ -10,18 +10,38 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Variables para poder manejar los textos y vistas de los inputs y ventana
   final user = TextEditingController();
   final pass = TextEditingController();
+  final nombre = TextEditingController();
+  final apellido = TextEditingController();
+  final userReg = TextEditingController();
+  final passReg = TextEditingController();
   final AuthService _auth = AuthService();
+  final _formKey = GlobalKey<FormState>();
+
   bool _rememberMe = false;
   bool _showSignIn = true;
 
+  // Funcion para cambiar la pantalla de Registro y la de Login
   void toggleView() {
     setState(() {
       _showSignIn = !_showSignIn;
     });  
   }
 
+  // Funcion para validar los formatos de emails
+  String validateEmail(String value) {
+    Pattern pattern =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    RegExp regex = new RegExp(pattern);
+    if (!regex.hasMatch(value))
+      return 'Por favor ingrese un correo válido';
+    else
+      return null;
+  }
+
+  // Se hacer un dispose de los manejadores de inputs
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
@@ -30,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Widget que define el componente del input del email
   Widget _buildEmailTF() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,7 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
           alignment: Alignment.centerLeft,
           decoration: kBoxDecorationStyle,
           height: 60.0,
-          child: TextField(
+          child: TextFormField(
+            validator: (value) => validateEmail(value),
             controller: user,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(
@@ -53,6 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
               prefixIcon: Icon(
                 Icons.email,
                 color: Colors.black,
@@ -66,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente del input del password
   Widget _buildPasswordTF() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,16 +105,25 @@ class _LoginScreenState extends State<LoginScreen> {
           alignment: Alignment.centerLeft,
           decoration: kBoxDecorationStyle,
           height: 60.0,
-          child: TextField(
+          child: TextFormField(
+            validator: (value) {
+              if (value.length < 6 || value.isEmpty) {
+                return 'Ingrese una contraseña con al menos 6 caracteres';
+              }
+              return null;
+            },
             controller: pass,
             obscureText: true,
             style: TextStyle(
               color: Colors.black,
               fontFamily: 'OpenSans'
-              ),
+            ),
             decoration: InputDecoration(
               border: InputBorder.none,
               contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
               prefixIcon: Icon(
                 Icons.lock,
                 color: Colors.black,
@@ -97,11 +132,104 @@ class _LoginScreenState extends State<LoginScreen> {
               hintStyle: kHintTextStyle,
             ),
           ),
-        )
+        ),
       ],
     );
   }
 
+  // Widget que define el componente del input del nombre del usuario
+  Widget _buildFirstNameUserTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Nombre del usuario',
+          style: kLabelStyle,
+        ),
+        SizedBox(height: 10.0),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: 60.0,
+          child: TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Ingrese su primer nombre';
+              }
+              return null;
+            },
+            controller: nombre,
+            keyboardType: TextInputType.emailAddress,
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'OpenSans'
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
+              prefixIcon: Icon(
+                Icons.person,
+                color: Colors.black,
+              ),
+              hintText: 'Ingrese su primer nombre',
+              hintStyle: kHintTextStyle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget que define el componente del input del nombre del usuario
+  Widget _buildLastNameUserTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Apellido del usuario',
+          style: kLabelStyle,
+        ),
+        SizedBox(height: 10.0),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: 60.0,
+          child: TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Ingrese su primer apellido';
+              }
+              return null;
+            },
+            controller: apellido,
+            obscureText: true,
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'OpenSans'
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
+              prefixIcon: Icon(
+                Icons.person,
+                color: Colors.black,
+              ),
+              hintText: 'Ingrese su primer apellido',
+              hintStyle: kHintTextStyle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget que define el componente para poder recuperar password
   Widget _buildForgotPasswordBtn() {
     return Container(
       alignment: Alignment.centerRight,
@@ -116,6 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente de recordar usuario y contraseña
   Widget _buildRememberMeCheckbox() {
     return Container(
       height: 20.0,
@@ -143,6 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente para el boton de Login
   Widget _buildLoginBtn() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 25.0),
@@ -150,25 +280,31 @@ class _LoginScreenState extends State<LoginScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          dynamic result = await _auth.signInAnon();
-          if (result == null) {
-            print('Error signing in');
-            user.clear();
-            pass.clear();
-          } else {
-            print(result);
-            Navigator.pushNamed(
-              context,
-              '/main', 
-              arguments: ScreenArguments(
-                user.text,
-                pass.text,
-              ),
-            ).then((value) {
-              //This makes sure the textfield is cleared after page is pushed.
+          if (_formKey.currentState.validate()) {
+            dynamic result = await _auth.signInAnon();
+            if (result == null) {
+              print('Error signing in');
               user.clear();
               pass.clear();
-            });
+              nombre.clear();
+              apellido.clear();
+            } else {
+              print(result);
+              Navigator.pushNamed(
+                context,
+                '/main', 
+                arguments: ScreenArguments(
+                  user.text,
+                  pass.text,
+                ),
+              ).then((value) {
+                //This makes sure the textfield is cleared after page is pushed.
+                user.clear();
+                pass.clear();
+                nombre.clear();
+                apellido.clear();
+              });
+            }
           }
         },
         padding: EdgeInsets.all(5.0),
@@ -190,14 +326,23 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente para el boton de Registro
   Widget _buildRegisterBtn() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 25.0),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () {
-          this.toggleView();
+        onPressed: () async {
+          if (_formKey.currentState.validate()) {
+            print(user.text);
+            print(pass.text);
+            user.clear();
+            pass.clear();
+            nombre.clear();
+            apellido.clear();
+            this.toggleView();
+          }
         },
         padding: EdgeInsets.all(5.0),
         shape: RoundedRectangleBorder(
@@ -218,6 +363,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente de Texto Auxiliar
   Widget _buildSignInWithText() {
     return Column(
       children: <Widget>[
@@ -237,6 +383,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente para hacer Login con Google
   Widget _buildGoogleEmail(Function onTap, AssetImage logo) {
     return GestureDetector(
       onTap: onTap,
@@ -261,6 +408,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente para Login con Google
   Widget _buildButonsSignIn() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 30.0),
@@ -278,9 +426,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget que define el componente para la opcion de registro
   Widget _buildSingUpBtn() {
     return GestureDetector(
       onTap: () {
+        _formKey.currentState.reset();   
         this.toggleView();
       },
       child: RichText(
@@ -308,9 +458,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Aqui se hace el build de la ventana
   @override
   Widget build(BuildContext context) {
     if (_showSignIn) {
+      // Aqui se hace la ventana de Login
       return Scaffold(
         body: Stack(
           children: <Widget>[
@@ -352,15 +504,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     SizedBox(height: 30.0),
-                    _buildEmailTF(),
-                    SizedBox(height: 30.0),
-                    _buildPasswordTF(),
-                    _buildForgotPasswordBtn(),
-                    _buildRememberMeCheckbox(),
-                    _buildLoginBtn(),
-                    _buildSignInWithText(),
-                    _buildButonsSignIn(),
-                    _buildSingUpBtn(),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: <Widget>[
+                          _buildEmailTF(),
+                          SizedBox(height: 30.0),
+                          _buildPasswordTF(),
+                          SizedBox(height: 30.0),
+                          //_buildForgotPasswordBtn(),
+                          //_buildRememberMeCheckbox(),
+                          _buildLoginBtn(),
+                          _buildSignInWithText(),
+                          _buildButonsSignIn(),
+                          _buildSingUpBtn(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -369,6 +529,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } else {
+      // Aqui se hace la ventana de Registro
       return Scaffold(
         body: Stack(
           children: <Widget>[
@@ -410,10 +571,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     SizedBox(height: 30.0),
-                    _buildEmailTF(),
-                    SizedBox(height: 30.0),
-                    _buildPasswordTF(),
-                    _buildRegisterBtn(),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: <Widget>[
+                          _buildFirstNameUserTF(),
+                          SizedBox(height: 30.0),
+                          _buildLastNameUserTF(),
+                          SizedBox(height: 30.0),
+                          _buildEmailTF(),
+                          SizedBox(height: 30.0),
+                          _buildPasswordTF(),
+                          SizedBox(height: 30.0),
+                          _buildRegisterBtn(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
