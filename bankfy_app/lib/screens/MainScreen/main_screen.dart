@@ -1,5 +1,7 @@
-import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/services/auth.dart';
+import 'package:bankfyapp/services/database.dart';
+import 'package:bankfyapp/screens/MainScreen/texto_nombre_usuario.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,30 +22,27 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //final ScreenArguments args = ModalRoute.of(context).settings.arguments;
-    final user = Provider.of<User>(context);
+    // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
+    // final user = Provider.of<User>(context);
 
-    return Scaffold(
-      backgroundColor: Colors.green[50],
-      appBar: AppBar(
-        title: 
-        Text(
-          user.correo,
-          style: TextStyle(
-            color: Colors.black  
-          ),
+    return StreamProvider<QuerySnapshot>.value(
+      value: DatabaseService().datos,
+        child: Scaffold(
+        backgroundColor: Colors.green[50],
+        appBar: AppBar(
+          title: TextoNombreUsuario(),
+          backgroundColor: Color(0xFF00AB08),
+          elevation: 0.0,
+          actions: <Widget>[
+            FlatButton.icon(
+                icon: Icon(Icons.person),
+                label: Text('Salir'),
+                onPressed: () async {
+                  await _auth.signOut();
+                },
+              )
+          ],
         ),
-        backgroundColor: Color(0xFF00AB08),
-        elevation: 0.0,
-        actions: <Widget>[
-          FlatButton.icon(
-              icon: Icon(Icons.person),
-              label: Text('Salir'),
-              onPressed: () async {
-                await _auth.signOut();
-              },
-            )
-        ],
       ),
     );
   }

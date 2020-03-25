@@ -299,21 +299,11 @@ class _LoginScreenState extends State<LoginScreen> {
               nombre.clear();
               apellido.clear();
             } else {
-              print(result);
-              Navigator.pushNamed(
-                context,
-                '/main', 
-                arguments: ScreenArguments(
-                  email.text,
-                  pass.text,
-                ),
-              ).then((value) {
-                //This makes sure the textfield is cleared after page is pushed.
-                email.clear();
-                pass.clear();
-                nombre.clear();
-                apellido.clear();
-              });
+              //This makes sure the textfield is cleared after page is pushed.
+              email.clear();
+              pass.clear();
+              nombre.clear();
+              apellido.clear();
             }
           }
         },
@@ -574,8 +564,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                           ),
                           _buildLoginBtn(),
-                          _buildSignInWithText(),
-                          _buildButonsSignIn(),
+                          //_buildSignInWithText(),
+                          //_buildButonsSignIn(),
                           _buildSingUpBtn(),
                         ],
                       ),
