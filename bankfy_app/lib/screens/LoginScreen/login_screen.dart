@@ -1,4 +1,4 @@
-import 'package:bankfyapp/screens/MainScreen/main_screen.dart';
+// import 'package:bankfyapp/screens/MainScreen/main_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:bankfyapp/utilities/loading.dart';
@@ -405,67 +405,67 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
   // Widget que define el componente de Texto Auxiliar
-  Widget _buildSignInWithText() {
-    return Column(
-      children: <Widget>[
-        Text(
-          ' O ',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: 20.0),
-        Text(
-          'Ingresa con',
-          style: kLabelStyle,
-        ),
-      ],
-    );
-  }
+  // Widget _buildSignInWithText() {
+  //   return Column(
+  //     children: <Widget>[
+  //       Text(
+  //         ' O ',
+  //         style: TextStyle(
+  //           color: Colors.black,
+  //           fontWeight: FontWeight.w500,
+  //         ),
+  //       ),
+  //       SizedBox(height: 20.0),
+  //       Text(
+  //         'Ingresa con',
+  //         style: kLabelStyle,
+  //       ),
+  //     ],
+  //   );
+  // }
 
   // Widget que define el componente para hacer Login con Google
-  Widget _buildGoogleEmail(Function onTap, AssetImage logo) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 60.0,
-        width: 60.0,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 6.0,
-            ),
-          ],
-          image: DecorationImage(
-            image: logo,
-          )
-        ),
-      ),
-    );
-  }
+  // Widget _buildGoogleEmail(Function onTap, AssetImage logo) {
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       height: 60.0,
+  //       width: 60.0,
+  //       decoration: BoxDecoration(
+  //         shape: BoxShape.circle,
+  //         color: Colors.white,
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.black26,
+  //             offset: Offset(0, 2),
+  //             blurRadius: 6.0,
+  //           ),
+  //         ],
+  //         image: DecorationImage(
+  //           image: logo,
+  //         )
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Widget que define el componente para Login con Google
-  Widget _buildButonsSignIn() {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildGoogleEmail(
-            () => print('Ingresando con Google'),
-            AssetImage(
-              'assets/logos/google.jpg',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildButonsSignIn() {
+  //   return Padding(
+  //     padding: EdgeInsets.symmetric(vertical: 30.0),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //       children: <Widget>[
+  //         _buildGoogleEmail(
+  //           () => print('Ingresando con Google'),
+  //           AssetImage(
+  //             'assets/logos/google.jpg',
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // Widget que define el componente para la opcion de registro
   Widget _buildSingUpBtn() {
