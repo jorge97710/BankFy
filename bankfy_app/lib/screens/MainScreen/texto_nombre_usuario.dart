@@ -26,7 +26,9 @@ class _TextoNombreUsuarioState extends State<TextoNombreUsuario> {
     return Text(
       'Bienvenido ' + nombre,
       style: TextStyle(
-        color: Colors.black, 
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+        fontSize: 18,
       ),
     );
   }

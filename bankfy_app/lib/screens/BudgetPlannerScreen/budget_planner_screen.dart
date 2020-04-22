@@ -1,16 +1,14 @@
-// import 'package:bankfyapp/screens/LoginScreen/login_screen.dart';
+import 'package:bankfyapp/screens/ConfiguracionPresupuestoScreen/configuracion_presupuesto_screen.dart';
+import 'package:bankfyapp/screens/VistaPresupuestoScreen/vista_presupuesto_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
-import 'package:bankfyapp/screens/MainScreen/texto_nombre_usuario.dart';
-import 'package:bankfyapp/screens/BancosScreen/bancos_screen.dart';
-import 'package:bankfyapp/screens/BudgetPlannerScreen/budget_planner_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class MainScreen extends StatefulWidget {
+class BudgetPlannerScreen extends StatefulWidget {
   @override
-  _MainScreenState createState() => _MainScreenState();
+  _BudgetPlannerScreenState createState() => _BudgetPlannerScreenState();
 }
 
 class ScreenArguments {
@@ -20,60 +18,11 @@ class ScreenArguments {
   ScreenArguments(this.usuario, this.contrasena);
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
   final AuthService _auth = AuthService();
 
-  // Widget que define dos botones de redireccionamiento a una ruta especificada cada uno
-  Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
-    return GestureDetector(
-      child: Container(
-        height: 120.0,
-        width: 120.0,
-        margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          color: Colors.green[500],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 6.0,
-            ),
-          ],
-          // image: DecorationImage(
-          //   image: logo,
-          // )
-        ),
-        child: FlatButton(
-          onPressed: () async {
-            //await _auth.signOut();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => route
-              )
-            );
-            //Navigator.pop(context);
-          },
-          padding: EdgeInsets.all(25.0),
-          child: Column(
-            children: <Widget>[
-              icon,
-              Text(
-                texto,
-                style: new TextStyle(
-                  fontSize: 11.0,
-                  // color: Colors.yellow,
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // Widget que define un boton de redireccionamiento a una ruta especificada
-  Widget _buildBotonOpcion2(StatefulWidget route, Icon icon, String texto) {
+  Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
     return GestureDetector(
       child: Container(
         height: 120.0,
@@ -120,36 +69,15 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-  // Widget que define un contenedor con capacidad de 2 botones horizontales
-  Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildBotonOpcion(
-            route,
-            icon,
-            texto,
-          ),
-          _buildBotonOpcion(
-            route2,
-            icon2,
-            texto2,
-          ),
-        ],
-      ),
-    );
-  }
 
   // Widget que define un contenedor para un unico boton horizontal
-  Widget  _buildOptionButtonsContainer2(StatefulWidget route, Icon icon, String texto) {
+  Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.0),
+      padding: EdgeInsets.symmetric(vertical: 60.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          _buildBotonOpcion2(
+          _buildBotonOpcion(
             route,
             icon,
             texto
@@ -173,7 +101,7 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () async {
               await _auth.signOut();
               Navigator.of(context).popUntil((route) => route.isFirst);
-              // Navigator.pop(context);
+              //Navigator.pop(context);
             },
           ), 
         );
@@ -185,7 +113,14 @@ class _MainScreenState extends State<MainScreen> {
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
-          title: TextoNombreUsuario(),
+          title: Text(
+            'Planificador de presupuesto',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           backgroundColor: Color(0xFF149414),
           elevation: 0.0,
           actions: <Widget>[
@@ -205,47 +140,26 @@ class _MainScreenState extends State<MainScreen> {
                 physics: AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: 40.0,
-                  vertical: 40.0,
+                  vertical: 50.0,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     _buildOptionButtonsContainer(
-                      BudgetPlannerScreen(),
+                      VistaPresupuestoScreen(),
                       Icon(
-                        Icons.monetization_on,
+                        Icons.store,
                         size: 45.0,
                       ),
                       'Presupuesto',
-                      BancosScreen(),
-                      Icon(
-                        Icons.poll,
-                        size: 45.0,
-                      ),
-                      'Estadísticas'
-                    ),
-                    _buildOptionButtonsContainer2(
-                      BancosScreen(),
-                      Icon(
-                        Icons.party_mode,
-                        size: 50.0,
-                      ),
-                      'Scaneo de Facturas'
                     ),
                     _buildOptionButtonsContainer(
-                      BancosScreen(),
+                      ConfiguracionPresupuestoScreen(),
                       Icon(
-                        //Icons.store,
-                        Icons.local_atm,
+                        Icons.store,
                         size: 45.0,
                       ),
-                      'Bancos',
-                      BancosScreen(),
-                      Icon(
-                        Icons.room,
-                        size: 45.0,
-                      ),
-                      'Consultas'
+                      'Configurar presupuesto'
                     ),
                   ],
                 )
