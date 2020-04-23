@@ -1,7 +1,7 @@
-import 'package:bankfyapp/screens/LoginScreen/login_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bankfyapp/utilities/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,77 +18,86 @@ class ScreenArguments {
 }
 
 class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuestoScreen> {
+  // Variables para poder manejar los textos y vistas de los inputs y ventana
+  final presupuestoDelPeriodo = TextEditingController();
   final AuthService _auth = AuthService();
 
-  // Widget que define un boton de redireccionamiento a una ruta especificada
-  Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
-    return GestureDetector(
-      child: Container(
-        height: 120.0,
-        width: 120.0,
-        margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          color: Colors.green[500],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 6.0,
-            ),
-          ],
-          // image: DecorationImage(
-          //   image: logo,
-          // )
-        ),
-        child: FlatButton(
-          onPressed: () async {
-            //await _auth.signOut();
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => route
-            //   )
-            // );
-            //Navigator.pop(context);
-            print('Banco 1');
-          },
-          padding: EdgeInsets.all(25.0),
-          child: Column(
-            children: <Widget>[
-              icon,
-              Text(
-                texto,
-                style: new TextStyle(
-                  fontSize: 11.0,
-                  // color: Colors.yellow,
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+  List _periods = ["Semanal", "Quincenal", "Mensual"];
+
+  List<DropdownMenuItem<String>> _dropDownMenuItems;
+  String _currentPeriod;
+
+  @override
+  void initState() {
+    _dropDownMenuItems = getDropDownMenuItems();
+    _currentPeriod = _dropDownMenuItems[0].value;
+    super.initState();
   }
 
-  // Widget que define un contenedor con capacidad de 2 botones horizontales
-  Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildBotonOpcion(
-            route,
-            icon,
-            texto,
+  // here we are creating the list needed for the DropDownButton
+  List<DropdownMenuItem<String>> getDropDownMenuItems() {
+    List<DropdownMenuItem<String>> items = new List();
+    for (String period in _periods) {
+      // here we are creating the drop down menu items, you can customize the item right here
+      // but I'll just use a simple text for this
+      items.add(new DropdownMenuItem(
+          value: period,
+          child: new Text(period)
+      ));
+    }
+    return items;
+  }
+
+  void changedDropDownItem(String selectedCity) {
+    print("Selected city $selectedCity, we are going to refresh the UI");
+    setState(() {
+      _currentPeriod = selectedCity;
+    });
+  }
+
+  // Widget que define el componente del input del presupuesto inicial del periodo
+  Widget _buildPresupuestoInicialPeriodoTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Presupuesto actual',
+          style: kLabelStyle,
+        ),
+        SizedBox(height: 10.0),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationStyle,
+          height: 60.0,
+          child: TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Ingrese el monto correspondiente al presupuesto';
+              }
+              return null;
+            },
+            controller: presupuestoDelPeriodo,
+            keyboardType: TextInputType.emailAddress,
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'OpenSans'
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
+              prefixIcon: Icon(
+                Icons.person,
+                color: Colors.black,
+              ),
+              hintText: 'Ingrese un monto',
+              hintStyle: kHintTextStyle,
+            ),
           ),
-          _buildBotonOpcion(
-            route2,
-            icon2,
-            texto2,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -123,7 +132,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              fontSize: 16,
             ),
           ),
           backgroundColor: Color(0xFF149414),
@@ -145,24 +154,16 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                 physics: AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: 40.0,
-                  vertical: 40.0,
+                  vertical: 50.0,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _buildOptionButtonsContainer(
-                      LoginScreen(),
-                      Icon(
-                        Icons.store,
-                        size: 45.0,
-                      ),
-                      'BAC',
-                      LoginScreen(),
-                      Icon(
-                        Icons.store,
-                        size: 45.0,
-                      ),
-                      'G&T'
+                    _buildPresupuestoInicialPeriodoTF(),
+                    new DropdownButton(
+                      value: _currentPeriod,
+                      items: _dropDownMenuItems,
+                      onChanged: changedDropDownItem,
                     ),
                   ],
                 )
