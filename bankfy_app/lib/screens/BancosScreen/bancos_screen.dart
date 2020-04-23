@@ -71,7 +71,7 @@ class _BancosScreenState extends State<BancosScreen> {
   }
 
   // Widget que define el componente para Login con Google
-  Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
+  Widget _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 30.0),
       child: Row(
@@ -151,13 +151,13 @@ class _BancosScreenState extends State<BancosScreen> {
                     _buildOptionButtonsContainer(
                       LoginScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.business,
                         size: 45.0,
                       ),
                       'BAC',
                       LoginScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.business,
                         size: 45.0,
                       ),
                       'G&T'
@@ -165,13 +165,13 @@ class _BancosScreenState extends State<BancosScreen> {
                     _buildOptionButtonsContainer(
                       LoginScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.business,
                         size: 45.0,
                       ),
                       'Banrural',
                       LoginScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.business,
                         size: 45.0,
                       ),
                       'Industrial'
@@ -179,14 +179,14 @@ class _BancosScreenState extends State<BancosScreen> {
                     _buildOptionButtonsContainer(
                       LoginScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.business,
                         //Icons.local_atm,
                         size: 45.0,
                       ),
                       'Bantrab',
                       LoginScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.business,
                         size: 45.0,
                       ),
                       'Promerica'

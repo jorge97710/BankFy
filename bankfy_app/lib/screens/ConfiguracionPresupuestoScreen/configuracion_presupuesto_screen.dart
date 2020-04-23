@@ -1,3 +1,4 @@
+import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,11 +21,15 @@ class ScreenArguments {
 class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuestoScreen> {
   // Variables para poder manejar los textos y vistas de los inputs y ventana
   final presupuestoDelPeriodo = TextEditingController();
+  final descripcionGasto = TextEditingController();
+  final porcentajeGasto = TextEditingController();
   final AuthService _auth = AuthService();
-
-  List _periods = ["Semanal", "Quincenal", "Mensual"];
+  final _formKey = GlobalKey<FormState>();
 
   List<DropdownMenuItem<String>> _dropDownMenuItems;
+  List _periods = ["Semanal", "Quincenal", "Mensual"];
+  List _gastos = [];
+  List<double> _porcentajes = [];
   String _currentPeriod;
 
   @override
@@ -48,11 +53,24 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
     return items;
   }
 
-  void changedDropDownItem(String selectedCity) {
-    print("Selected city $selectedCity, we are going to refresh the UI");
+  void changedDropDownItem(String selectedPeriod) {
     setState(() {
-      _currentPeriod = selectedCity;
+      _currentPeriod = selectedPeriod;
     });
+  }
+
+  void deleteTile(int index) {
+    setState(() {
+      _gastos.removeAt(index);
+      _porcentajes.removeAt(index);
+    });
+  }
+
+  bool isNumeric(String s) {
+  if (s == null) {
+    return false;
+  }
+  return double.tryParse(s) != null;
   }
 
   // Widget que define el componente del input del presupuesto inicial del periodo
@@ -67,12 +85,15 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
         SizedBox(height: 10.0),
         Container(
           alignment: Alignment.centerLeft,
-          decoration: kBoxDecorationStyle,
+          decoration: kBoxDecorationWhiteStyle,
           height: 60.0,
           child: TextFormField(
             validator: (value) {
               if (value.isEmpty) {
                 return 'Ingrese el monto correspondiente al presupuesto';
+              }
+              else if (!isNumeric(value)) {
+                return 'Ingrese un monto numérico';
               }
               return null;
             },
@@ -89,7 +110,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                 fontSize: 10.0,
               ),
               prefixIcon: Icon(
-                Icons.person,
+                Icons.attach_money,
                 color: Colors.black,
               ),
               hintText: 'Ingrese un monto',
@@ -98,6 +119,195 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
           ),
         ),
       ],
+    );
+  }
+
+  // Widget que define un text field para la descripcion del gasto
+  Widget _buildDescripcionGastoTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Nombre del gasto',
+          style: kLabelStyle,
+        ),
+        SizedBox(height: 10.0),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationWhiteStyle,
+          height: 60.0,
+          width: MediaQuery.of(context).size.width * 0.35,
+          child: TextFormField(
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Ingrese un gasto';
+              }
+              return null;
+            },
+            controller: descripcionGasto,
+            keyboardType: TextInputType.emailAddress,
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'OpenSans'
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
+              prefixIcon: Icon(
+                Icons.attach_money,
+                color: Colors.black,
+              ),
+              hintText: 'Gasto',
+              hintStyle: kHintTextStyle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget que define un text field para el porcentaje asignado al gasto
+  Widget _buildPorcentajeGastoTF() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Porcentaje del gasto',
+          style: kLabelStyle,
+        ),
+        SizedBox(height: 10.0),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: kBoxDecorationWhiteStyle,
+          height: 60.0,
+          width: MediaQuery.of(context).size.width * 0.35,
+          child: TextFormField(
+            validator: (value) {
+              var contador = 0.0;
+              for (double cantidad in _porcentajes){
+                contador = contador + cantidad; 
+              }
+              if (value.isEmpty) {
+                return 'Porcentaje inválido';
+              }
+              else if (!isNumeric(value)) {
+                return 'Porcentaje inválido';
+              }
+              else if ((contador + int.parse(value)) > 100) {
+                return 'Porcentaje inválido';
+              }
+              return null;
+            },
+            controller: porcentajeGasto,
+            keyboardType: TextInputType.emailAddress,
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: 'OpenSans'
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.only(top: 14.0),
+              errorStyle: TextStyle(
+                fontSize: 10.0,
+              ),
+              prefixIcon: Icon(
+                Icons.attach_money,
+                color: Colors.black,
+              ),
+              hintText: 'Porcentaje',
+              hintStyle: kHintTextStyle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Widget que define el componente para Login con Google
+  Widget _buildTFContainer() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 30.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          _buildDescripcionGastoTF(),
+          _buildPorcentajeGastoTF(),
+        ],
+      ),
+    );
+  }
+
+  // Widget que define el componente para el boton de Send Presupuesto
+  Widget _buildSendBtn(user) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 25.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          if (presupuestoDelPeriodo.text != '' && _gastos.length != 0) {
+            await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
+            presupuestoDelPeriodo.clear();
+            descripcionGasto.clear();
+            porcentajeGasto.clear();
+          }
+        },
+        padding: EdgeInsets.all(5.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'Ingresar presupuesto',
+          style: TextStyle(
+            color: Colors.black,
+            letterSpacing: 1.5,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget que define el componente para el boton de Send Presupuesto
+  Widget _buildSetGastoBtn() {
+    return Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      width: MediaQuery.of(context).size.width * 0.75,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          if (_formKey.currentState.validate()) {
+            setState(() {
+              _gastos.add(descripcionGasto.text);
+              _porcentajes.add(int.parse(porcentajeGasto.text).toDouble());
+            });
+            descripcionGasto.clear();
+            porcentajeGasto.clear();
+          }
+        },
+        padding: EdgeInsets.all(5.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'Agregar gasto',
+          style: TextStyle(
+            color: Colors.black,
+            letterSpacing: 1.5,
+            fontSize: 14.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
     );
   }
 
@@ -122,6 +332,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
       });
     }
 
+    final user = Provider.of<User>(context);
     return StreamProvider<QuerySnapshot>.value(
       value: DatabaseService().datos,
         child: Scaffold(
@@ -132,7 +343,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 15,
             ),
           ),
           backgroundColor: Color(0xFF149414),
@@ -156,17 +367,62 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                   horizontal: 40.0,
                   vertical: 50.0,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    _buildPresupuestoInicialPeriodoTF(),
-                    new DropdownButton(
-                      value: _currentPeriod,
-                      items: _dropDownMenuItems,
-                      onChanged: changedDropDownItem,
-                    ),
-                  ],
-                )
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: <Widget>[
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          _buildPresupuestoInicialPeriodoTF(),
+                          SizedBox(height: 40.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'Periodo del presupuesto',
+                                style: kLabelStyle,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  SizedBox(height: 10.0),
+                                  Container(
+                                    alignment: Alignment.center,
+                                    child: new DropdownButton(
+                                      value: _currentPeriod,
+                                      items: _dropDownMenuItems,
+                                      onChanged: changedDropDownItem,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 30.0),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                            Text(
+                              'Gastos del presupuesto',
+                              style: kLabelStyle,
+                            ),
+                            _buildTFContainer(),
+                            for (var i = 0; i < _gastos.length; i++) ListTile(
+                              leading: Icon(Icons.delete),
+                              title: Text(_gastos[i]),
+                              subtitle: Text('Porcentaje de gasto: ' + _porcentajes[i].toString() + '%'),
+                              onTap: () => deleteTile(i),
+                            ),
+                            _buildSetGastoBtn(),
+                            _buildSendBtn(user),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],

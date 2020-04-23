@@ -148,7 +148,7 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
                     _buildOptionButtonsContainer(
                       VistaPresupuestoScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.description,
                         size: 45.0,
                       ),
                       'Presupuesto',
@@ -156,7 +156,7 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
                     _buildOptionButtonsContainer(
                       ConfiguracionPresupuestoScreen(),
                       Icon(
-                        Icons.store,
+                        Icons.build,
                         size: 45.0,
                       ),
                       'Configurar presupuesto'

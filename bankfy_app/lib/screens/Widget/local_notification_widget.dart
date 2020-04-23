@@ -16,7 +16,7 @@ class _LocalNotificationWidgetState extends State<LocalNotificationWidget> {
   void initState() {
     super.initState();
 
-    final settingsAndroid = AndroidInitializationSettings('piggyBank');
+    final settingsAndroid = AndroidInitializationSettings('piggybank');
     final settingsIOS = IOSInitializationSettings(
         onDidReceiveLocalNotification: (id, title, body, payload) =>
             onSelectNotification(payload));
