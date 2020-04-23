@@ -1,9 +1,9 @@
-import 'package:bankfyapp/screens/LoginScreen/login_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:getflutter/getflutter.dart';
 
 class VistaPresupuestoScreen extends StatefulWidget {
   @override
@@ -19,6 +19,15 @@ class ScreenArguments {
 
 class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
   final AuthService _auth = AuthService();
+  List _gastos = [];
+  List<double> _porcentajes = [];
+
+  bool revision = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   // Widget que define un boton de redireccionamiento a una ruta especificada
   Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
@@ -150,22 +159,22 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _buildOptionButtonsContainer(
-                      LoginScreen(),
-                      Icon(
-                        Icons.store,
-                        size: 45.0,
+                    for (var i = 0; i < _gastos.length; i++) GFProgressBar(
+                      animation: true,
+                      animationDuration: 1000,
+                      lineHeight: 40,
+                      percentage: 0.7,
+                      child: Center(
+                        child: const Text('80%', 
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.black),
+                        ),
                       ),
-                      'BAC',
-                      LoginScreen(),
-                      Icon(
-                        Icons.store,
-                        size: 45.0,
-                      ),
-                      'G&T'
-                    ),
+                      backgroundColor : Colors.black26,
+                      progressBarColor: GFColors.DANGER
+                    )
                   ],
-                )
+                ),
               ),
             ),
           ],

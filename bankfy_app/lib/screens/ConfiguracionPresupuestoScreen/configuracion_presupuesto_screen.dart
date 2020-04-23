@@ -1,4 +1,5 @@
 import 'package:bankfyapp/models/user.dart';
+import 'package:bankfyapp/screens/BudgetPlannerScreen/budget_planner_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,12 +26,14 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
   final porcentajeGasto = TextEditingController();
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
+  final _formKey2 = GlobalKey<FormState>();
 
   List<DropdownMenuItem<String>> _dropDownMenuItems;
   List _periods = ["Semanal", "Quincenal", "Mensual"];
   List _gastos = [];
   List<double> _porcentajes = [];
   String _currentPeriod;
+  bool revision = true;
 
   @override
   void initState() {
@@ -71,6 +74,37 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
     return false;
   }
   return double.tryParse(s) != null;
+  }
+
+  Future obtenerGastos(user) async {
+    var gastos = await DatabaseService(uid: user.uid).getGastosData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (gastos != null) {
+      if (gastos.data != null){
+        if (gastos.data['gasto'] != null){
+          setState(() {
+            for( var gasto in gastos.data['gasto']){
+              _gastos.add(gasto);
+            }
+            for( var porcentaje in gastos.data['porcentaje']){
+              _porcentajes.add(porcentaje);
+            }        
+          });
+        }
+      }
+    }
+  }
+
+  Future obtenerPresupuesto(user) async {
+    var presupuesto = await DatabaseService(uid: user.uid).getPresupuestoData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (presupuesto != null) {
+      if (presupuesto.data != null){
+        if (presupuesto.data['presupuesto'] != null){
+          presupuestoDelPeriodo.text = presupuesto.data['presupuesto'].toStringAsFixed(2);  
+        }
+      }
+    }
   }
 
   // Widget que define el componente del input del presupuesto inicial del periodo
@@ -248,11 +282,17 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          if (presupuestoDelPeriodo.text != '' && _gastos.length != 0) {
+          if (_formKey.currentState.validate() && _gastos.length != 0) {
+            await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), _currentPeriod);
             await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
             presupuestoDelPeriodo.clear();
             descripcionGasto.clear();
             porcentajeGasto.clear();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => BudgetPlannerScreen()
+              )
+            );
           }
         },
         padding: EdgeInsets.all(5.0),
@@ -274,8 +314,8 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
     );
   }
 
-  // Widget que define el componente para el boton de Send Presupuesto
-  Widget _buildSetGastoBtn() {
+  // Widget que define el componente para el boton de Set Presupuesto
+  Widget _buildSetGastoBtn(user) {
     return Container(
       alignment: Alignment.center,
       padding: EdgeInsets.symmetric(vertical: 10.0),
@@ -283,7 +323,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          if (_formKey.currentState.validate()) {
+          if (_formKey2.currentState.validate()) {
             setState(() {
               _gastos.add(descripcionGasto.text);
               _porcentajes.add(int.parse(porcentajeGasto.text).toDouble());
@@ -314,7 +354,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
-    // final user = Provider.of<User>(context);
+    final user = Provider.of<User>(context);
     void _showSettingsPanel() {
       showModalBottomSheet(context: context, builder: (context) { 
         return Container(
@@ -332,9 +372,14 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
       });
     }
 
-    final user = Provider.of<User>(context);
+    if (revision) {
+      obtenerGastos(user);
+      obtenerPresupuesto(user);
+      revision = false;
+    }
+
     return StreamProvider<QuerySnapshot>.value(
-      value: DatabaseService().datos,
+      value: DatabaseService().gastos,
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
@@ -367,13 +412,13 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                   horizontal: 40.0,
                   vertical: 50.0,
                 ),
-                child: Form(
-                  key: _formKey,
+
                   child: Column(
                     children: <Widget>[
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
+                          Form(key: _formKey,child: Column(children: <Widget>[
                           _buildPresupuestoInicialPeriodoTF(),
                           SizedBox(height: 40.0),
                           Column(
@@ -399,7 +444,10 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                               ),
                             ],
                           ),
+                          ],)),
+
                           SizedBox(height: 30.0),
+                          Form(key: _formKey2,child: Column(children: <Widget>[
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -414,15 +462,19 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                               subtitle: Text('Porcentaje de gasto: ' + _porcentajes[i].toString() + '%'),
                               onTap: () => deleteTile(i),
                             ),
-                            _buildSetGastoBtn(),
+                            StreamProvider<QuerySnapshot>.value(
+                              value: DatabaseService().gastos,
+                                child: _buildSetGastoBtn(user),
+                            ),
                             _buildSendBtn(user),
                             ],
                           ),
+                          ])),
+
                         ],
                       ),
                     ],
                   ),
-                ),
               ),
             ),
           ],

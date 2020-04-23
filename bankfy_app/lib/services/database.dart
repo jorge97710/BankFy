@@ -10,6 +10,8 @@ class DatabaseService {
 
   final CollectionReference gastosDataCollection = Firestore.instance.collection('gastos');
 
+  final CollectionReference presupuestoDataCollection = Firestore.instance.collection('presupuestos');
+
   Future updateUserData(String nombre, String apellido) async {
     return await userDataCollection.document(uid).setData({
       'nombre': nombre,
@@ -24,8 +26,33 @@ class DatabaseService {
     });
   }
 
-  //  Obtener los datos del Usuario Stream
+  Future updatePresupuestoData(String presupuesto, String periodo) async {
+    return await presupuestoDataCollection.document(uid).setData({
+      'presupuesto': double.parse(presupuesto),
+      'periodo': periodo
+    });
+  }
+
+  Future getGastosData() async {
+    return await gastosDataCollection.document(uid).get();
+  }
+
+  Future getPresupuestoData() async {
+    return await presupuestoDataCollection.document(uid).get();
+  }
+
+  // Obtener los datos del Usuario Stream
   Stream<QuerySnapshot> get datos {
     return userDataCollection.snapshots();
   }
+
+  // Obtener los datos de los gastos del usuario
+  Stream<QuerySnapshot> get gastos {
+    return gastosDataCollection.snapshots();
+  }
+
+  // Obtener el presupuesto del usuario
+  Stream<QuerySnapshot> get presupuestos {
+    return presupuestoDataCollection.snapshots();
+  }  
 }
