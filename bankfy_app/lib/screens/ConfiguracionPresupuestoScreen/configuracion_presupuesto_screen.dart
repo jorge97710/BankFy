@@ -444,7 +444,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                               ),
                             ],
                           ),
-                          ],)),
+                          ],),),
 
                           SizedBox(height: 30.0),
                           Form(key: _formKey2,child: Column(children: <Widget>[
@@ -469,8 +469,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                             _buildSendBtn(user),
                             ],
                           ),
-                          ])),
-
+                          ],),),
                         ],
                       ),
                     ],

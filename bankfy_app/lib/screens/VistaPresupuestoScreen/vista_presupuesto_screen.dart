@@ -1,9 +1,12 @@
 import 'package:bankfyapp/services/auth.dart';
+import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:getflutter/getflutter.dart';
+import 'package:bankfyapp/utilities/constants.dart';
+import 'dart:math';
 
 class VistaPresupuestoScreen extends StatefulWidget {
   @override
@@ -19,92 +22,84 @@ class ScreenArguments {
 
 class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
   final AuthService _auth = AuthService();
-  List _gastos = [];
-  List<double> _porcentajes = [];
+  List _gastos;
+  List<double> _porcentajes;
+  String presupuesto1;
+  List _colores = [GFColors.DANGER, GFColors.INFO, GFColors.WARNING, GFColors.SUCCESS, GFColors.LIGHT];
+  List _porcentajesUsados;
+  List _gastadoActualmente;
 
   bool revision = true;
 
   @override
   void initState() {
+    _gastos = [];
+    _porcentajes = [];
+    _porcentajesUsados = [];
+    _gastadoActualmente = [];
+    presupuesto1 = '0';
     super.initState();
   }
 
-  // Widget que define un boton de redireccionamiento a una ruta especificada
-  Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
-    return GestureDetector(
-      child: Container(
-        height: 120.0,
-        width: 120.0,
-        margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          color: Colors.green[500],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              offset: Offset(0, 2),
-              blurRadius: 6.0,
-            ),
-          ],
-          // image: DecorationImage(
-          //   image: logo,
-          // )
-        ),
-        child: FlatButton(
-          onPressed: () async {
-            //await _auth.signOut();
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => route
-            //   )
-            // );
-            //Navigator.pop(context);
-            print('Banco 1');
-          },
-          padding: EdgeInsets.all(25.0),
-          child: Column(
-            children: <Widget>[
-              icon,
-              Text(
-                texto,
-                style: new TextStyle(
-                  fontSize: 11.0,
-                  // color: Colors.yellow,
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+  Future obtenerGastos(user) async {
+    var gastos = await DatabaseService(uid: user.uid).getGastosData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (gastos != null) {
+      if (gastos.data != null){
+        if (gastos.data['gasto'] != null){
+          setState(() {
+            for( var gasto in gastos.data['gasto']){
+              _gastos.add(gasto);
+            }
+            for( var porcentaje in gastos.data['porcentaje']){
+              _porcentajes.add(porcentaje);
+            }        
+          });
+        }
+      }
+    }
   }
 
-  // Widget que define un contenedor con capacidad de 2 botones horizontales
-  Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _buildBotonOpcion(
-            route,
-            icon,
-            texto,
-          ),
-          _buildBotonOpcion(
-            route2,
-            icon2,
-            texto2,
-          ),
-        ],
-      ),
-    );
+  Future obtenerPresupuesto(user) async {
+    var presupuesto = await DatabaseService(uid: user.uid).getPresupuestoData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (presupuesto != null) {
+      if (presupuesto.data != null){
+        if (presupuesto.data['presupuesto'] != null){
+          setState(() {
+            presupuesto1 = presupuesto.data['presupuesto'].toStringAsFixed(2);  
+          });
+        }
+      }
+    }
+  }
+
+  Future calcularPresupuesto(user) async {
+    var gastos = await DatabaseService(uid: user.uid).getGastosData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (gastos != null) {
+      if (gastos.data != null){
+        if (gastos.data['gasto'] != null){
+          await Future.delayed(const Duration(seconds: 1), (){});
+          setState(() {
+            for (var i = 0; i < _gastos.length; i++){
+                double porcentajeLimite = _porcentajes[i];
+                double gastoLimite = double.parse(presupuesto1.toString()) * (porcentajeLimite / 100.0);
+                double gastoUtilizado = gastoLimite * Random().nextDouble();
+                double porcentajeUsado = gastoUtilizado * 100 /gastoLimite;
+                _porcentajesUsados.add(porcentajeUsado);
+                _gastadoActualmente.add(gastoUtilizado);
+            }      
+          });
+        }
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
-    // final user = Provider.of<User>(context);
+    final user = Provider.of<User>(context);
     void _showSettingsPanel() {
       showModalBottomSheet(context: context, builder: (context) { 
         return Container(
@@ -122,6 +117,13 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
       });
     }
 
+    if (revision) {
+      obtenerGastos(user);
+      obtenerPresupuesto(user);
+      calcularPresupuesto(user);
+      revision = false;
+    }
+  
     return StreamProvider<QuerySnapshot>.value(
       value: DatabaseService().datos,
         child: Scaffold(
@@ -159,20 +161,30 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    for (var i = 0; i < _gastos.length; i++) GFProgressBar(
-                      animation: true,
-                      animationDuration: 1000,
-                      lineHeight: 40,
-                      percentage: 0.7,
-                      child: Center(
-                        child: const Text('80%', 
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.black),
+                    for (var i = 0; i < _gastos.length; i++) Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          'Presupuesto utilizado para ' + _gastos[i],
+                          style: kLabelStyle,
                         ),
-                      ),
-                      backgroundColor : Colors.black26,
-                      progressBarColor: GFColors.DANGER
-                    )
+                        GFProgressBar(
+                          animation: true,
+                          animationDuration: 1000,
+                          lineHeight: 40,
+                          percentage: _porcentajesUsados[i]/100,
+                          child: Center(
+                            child: Text(_porcentajesUsados[i].toStringAsFixed(2) + '%', 
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: Colors.black),
+                            ),
+                          ),
+                          backgroundColor : Colors.black26,
+                          progressBarColor: _colores[i],
+                        ),
+                        SizedBox(height: 30.0),
+                      ],
+                    ),
                   ],
                 ),
               ),
