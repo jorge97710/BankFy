@@ -39,6 +39,10 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
     _gastadoActualmente = [];
     presupuesto1 = '0';
     super.initState();
+    Future.delayed(Duration.zero,() {
+      obtenerGastos(Provider.of<User>(context, listen: false));
+      obtenerPresupuesto(Provider.of<User>(context, listen: false));
+    });
   }
 
   Future obtenerGastos(user) async {
@@ -72,15 +76,12 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
         }
       }
     }
-  }
 
-  Future calcularPresupuesto(user) async {
     var gastos = await DatabaseService(uid: user.uid).getGastosData(); 
     // Se revisa si aun no se ha obtenido respuesta de Firebase
     if (gastos != null) {
       if (gastos.data != null){
         if (gastos.data['gasto'] != null){
-          await Future.delayed(const Duration(seconds: 1), (){});
           setState(() {
             for (var i = 0; i < _gastos.length; i++){
                 double porcentajeLimite = _porcentajes[i];
@@ -117,13 +118,6 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
       });
     }
 
-    if (revision) {
-      obtenerGastos(user);
-      obtenerPresupuesto(user);
-      calcularPresupuesto(user);
-      revision = false;
-    }
-  
     return StreamProvider<QuerySnapshot>.value(
       value: DatabaseService().datos,
         child: Scaffold(
@@ -164,23 +158,29 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                     for (var i = 0; i < _gastos.length; i++) Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text(
-                          'Presupuesto utilizado para ' + _gastos[i],
-                          style: kLabelStyle,
-                        ),
-                        GFProgressBar(
-                          animation: true,
-                          animationDuration: 1000,
-                          lineHeight: 40,
-                          percentage: _porcentajesUsados[i]/100,
-                          child: Center(
-                            child: Text(_porcentajesUsados[i].toStringAsFixed(2) + '%', 
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16, color: Colors.black),
+                        if (_porcentajesUsados.asMap().containsKey(i))
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              'Presupuesto ya utilizado para ' + _gastos[i],
+                              style: kLabelStyle,
                             ),
-                          ),
-                          backgroundColor : Colors.black26,
-                          progressBarColor: _colores[i],
+                            GFProgressBar(
+                              animation: true,
+                              animationDuration: 1000,
+                              lineHeight: 40,
+                              percentage: _porcentajesUsados[i]/100,
+                              child:  Center(
+                                child: Text(_porcentajesUsados[i].toStringAsFixed(2) + '%', 
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16, color: Colors.black),
+                                ),
+                              ),
+                              backgroundColor : Colors.black26,
+                              progressBarColor: _colores[i],
+                            ),
+                          ],
                         ),
                         SizedBox(height: 30.0),
                       ],
