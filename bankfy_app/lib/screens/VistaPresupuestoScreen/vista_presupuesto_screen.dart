@@ -206,13 +206,25 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                                       SleekCircularSlider(
                                         min: 0,
                                         max: 100,
-                                        initialValue: _porcentajesUsados[i],
+                                        initialValue: _porcentajesUsados[i] - 1,
                                         appearance: CircularSliderAppearance(
                                           infoProperties: InfoProperties(
                                             bottomLabelText: 'Q' + _gastadoActualmente[i].toStringAsFixed(2),
                                             bottomLabelStyle: TextStyle(
                                               fontSize: 12
                                             ),
+                                          ),
+                                          customColors: CustomSliderColors(
+                                            trackColor: _colores[i],
+                                            progressBarColors: [
+                                              _colores[i],
+                                              _colores[i]
+                                            ],
+                                            gradientStartAngle: 0,
+                                            gradientEndAngle: 180,
+                                            dotColor:  Color(0xFFFFFFFF),
+                                            hideShadow: false,
+                                            shadowColor: Colors.black
                                           ),
                                         ),
                                       ),
@@ -242,13 +254,25 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                                       SleekCircularSlider(
                                         min: 0,
                                         max: 100,
-                                        initialValue: 100 - _porcentajesUsados[i] - 1,
+                                        initialValue: 100 - _porcentajesUsados[i],
                                         appearance: CircularSliderAppearance(
                                           infoProperties: InfoProperties(
                                             bottomLabelText: 'Q' + (double.parse(presupuesto1.toString()) * (_porcentajes[i] / 100.0) - _gastadoActualmente[i]).toStringAsFixed(2),
                                             bottomLabelStyle: TextStyle(
                                               fontSize: 12
                                             ),
+                                          ),
+                                          customColors: CustomSliderColors(
+                                            trackColor: _colores[i],
+                                            progressBarColors: [
+                                              _colores[i],
+                                              _colores[i]
+                                            ],
+                                            gradientStartAngle: 0,
+                                            gradientEndAngle: 180,
+                                            dotColor:  Color(0xFFFFFFFF),
+                                            hideShadow: false,
+                                            shadowColor: Colors.black
                                           ),
                                         ),
                                       ),
