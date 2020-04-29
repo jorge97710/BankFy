@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:getflutter/getflutter.dart';
+import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'dart:math';
 
@@ -100,7 +101,7 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
-    final user = Provider.of<User>(context);
+    // final user = Provider.of<User>(context);
     void _showSettingsPanel() {
       showModalBottomSheet(context: context, builder: (context) { 
         return Container(
@@ -164,8 +165,9 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                           children: <Widget>[
                             Text(
                               'Presupuesto ya utilizado para ' + _gastos[i],
-                              style: kLabelStyle,
+                              style: kLabelStyle,                
                             ),
+                            SizedBox(height: 15.0),
                             GFProgressBar(
                               animation: true,
                               animationDuration: 1000,
@@ -180,9 +182,84 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                               backgroundColor : Colors.black26,
                               progressBarColor: _colores[i],
                             ),
+                            SizedBox(height: 5.0),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Container(
+                                  height: 230.0,
+                                  width: 140.0,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                        'Monto gastado para ' + _gastos[i],
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.black38,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'OpenSans',
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      SizedBox(height: 5.0),
+                                      SleekCircularSlider(
+                                        min: 0,
+                                        max: 100,
+                                        initialValue: _porcentajesUsados[i],
+                                        appearance: CircularSliderAppearance(
+                                          infoProperties: InfoProperties(
+                                            bottomLabelText: 'Q' + _gastadoActualmente[i].toStringAsFixed(2),
+                                            bottomLabelStyle: TextStyle(
+                                              fontSize: 12
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ), 
+                                ),
+                                Container(
+                                  height: 230.0,
+                                  width: 140.0,
+                                  decoration: new BoxDecoration(
+                                    color: Colors.green[50]
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                        'Monto restante para ' + _gastos[i],
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.black38,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'OpenSans',
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      SizedBox(height: 5.0),
+                                      SleekCircularSlider(
+                                        min: 0,
+                                        max: 100,
+                                        initialValue: 100 - _porcentajesUsados[i] - 1,
+                                        appearance: CircularSliderAppearance(
+                                          infoProperties: InfoProperties(
+                                            bottomLabelText: 'Q' + (double.parse(presupuesto1.toString()) * (_porcentajes[i] / 100.0) - _gastadoActualmente[i]).toStringAsFixed(2),
+                                            bottomLabelStyle: TextStyle(
+                                              fontSize: 12
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ), 
+                                ),
+                              ],
+                            ),
                           ],
                         ),
-                        SizedBox(height: 30.0),
+                        SizedBox(height: 15.0),
                       ],
                     ),
                   ],
