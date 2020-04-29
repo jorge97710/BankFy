@@ -18,7 +18,7 @@ class _CamaraScreen extends State<CamaraScreen> {
   File _image;
   String _textImage = "0.00";
   double counter = 0.00;
-
+  String dropdownValue = 'Comida';
   
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -92,7 +92,7 @@ class _CamaraScreen extends State<CamaraScreen> {
             children: <Widget>[
               Align(
                 child: _image == null
-                  ? new Text("No image selected")
+                  ? new Text("")
                   : new Image.file(_image)
               ),
               Text("Total: " + _textImage),
@@ -106,6 +106,32 @@ class _CamaraScreen extends State<CamaraScreen> {
                     color: Colors.green[500],
                   ),
                 ],)
+              ),
+              DropdownButton<String>(
+                value: dropdownValue,
+                icon: Icon(Icons.arrow_downward),
+                iconSize: 24,
+                elevation: 16,
+                style: TextStyle(
+                  color: Colors.green[900]
+                ),
+                underline: Container(
+                  height: 2,
+                  color: Colors.green[800],
+                ),
+                onChanged: (String newValue){
+                  setState(() {
+                    dropdownValue = newValue;
+                  });
+                },
+                items: <String> ['Comida', 'Trabajo', 'Estudios', 'Otros']
+                .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                    );
+                })
+                .toList(),
               )
             ],
           ),
