@@ -4,14 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:async';
 import 'dart:io';
 
-
-
 class CamaraScreen extends StatefulWidget {
   @override
   _CamaraScreen createState() => new _CamaraScreen();
 }
-
-
 
 class _CamaraScreen extends State<CamaraScreen> {
   

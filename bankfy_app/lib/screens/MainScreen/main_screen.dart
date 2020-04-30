@@ -4,6 +4,7 @@ import 'package:bankfyapp/services/database.dart';
 import 'package:bankfyapp/screens/MainScreen/texto_nombre_usuario.dart';
 import 'package:bankfyapp/screens/BancosScreen/bancos_screen.dart';
 import 'package:bankfyapp/screens/CamaraScreen/camara_screen.dart';
+import 'package:bankfyapp/screens/ContactScreen/contact_screen.dart';
 import 'package:bankfyapp/screens/BudgetPlannerScreen/budget_planner_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -241,7 +242,7 @@ class _MainScreenState extends State<MainScreen> {
                         size: 45.0,
                       ),
                       'Bancos',
-                      BancosScreen(),
+                      ContactScreen(),
                       Icon(
                         Icons.room,
                         size: 45.0,
