@@ -16,7 +16,7 @@ class CamaraScreen extends StatefulWidget {
 class _CamaraScreen extends State<CamaraScreen> {
   
   File _image;
-  String _textImage = "0.00";
+  String _textImage = "Tomar foto o ingresar monto";
   double counter = 0.00;
   String dropdownValue = 'Comida';
   
@@ -95,14 +95,28 @@ class _CamaraScreen extends State<CamaraScreen> {
                   ? new Text("")
                   : new Image.file(_image)
               ),
-              Text("Total: " + _textImage),
+              //Text("Total: " + _textImage),
+              TextField(
+                obscureText: false,
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: _textImage,
+                ),
+              ),
               Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                   RaisedButton(
                     onPressed: getImage,
-                    child: Text("Take Picture"),
+                    child: Text("Tomar Foto"),
+                    color: Colors.green[500],
+                  ),
+                  Text("  "),
+                  RaisedButton(
+                    onPressed: getImage,
+                    child: Text("Agregar"),
                     color: Colors.green[500],
                   ),
                 ],)
