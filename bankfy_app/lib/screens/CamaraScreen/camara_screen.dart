@@ -19,9 +19,10 @@ class _CamaraScreen extends State<CamaraScreen> {
   final AuthService _auth = AuthService();
   final textoMontoTotalImagen = TextEditingController();
   File _image;
-  String _textImage = "Tomar foto o ingresar monto";
   double counter = 0.00;
-  String dropdownValue = 'Comida';
+  String dropdownValue = '';
+  List<String> _gastos = [];
+  bool revision = true;
   
   // Widget que define el componente del input del presupuesto inicial del periodo
   Widget _buildMontoTotalFacturaTF() {
@@ -70,6 +71,23 @@ class _CamaraScreen extends State<CamaraScreen> {
         ),
       ],
     );
+  }
+
+  Future obtenerGastos(user) async {
+    var gastos = await DatabaseService(uid: user.uid).getGastosData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (gastos != null) {
+      if (gastos.data != null){
+        if (gastos.data['gasto'] != null){
+          setState(() {
+            for( var gasto in gastos.data['gasto']){
+              _gastos.add(gasto);
+            }   
+            dropdownValue = _gastos[0];   
+          });
+        }
+      }
+    }
   }
 
   Future getImage() async {
@@ -147,6 +165,11 @@ class _CamaraScreen extends State<CamaraScreen> {
       });
     }
 
+    if (revision) {
+      obtenerGastos(user);
+      revision = false;
+    }
+
     return StreamProvider<QuerySnapshot>.value(
       value: DatabaseService().gastos,
         child: Scaffold(
@@ -195,53 +218,69 @@ class _CamaraScreen extends State<CamaraScreen> {
                     //   ),
                     // ),
                     SizedBox(height: 30.0),
+                    Text(
+                      'Tipo de Gasto',
+                      style: kLabelStyle,
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      child: DropdownButton<String>(
+                        value: dropdownValue,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(
+                          
+                          color: Colors.green[900]
+                        ),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.green[800],
+                        ),
+                        onChanged: (String newValue){
+                          setState(() {
+                            dropdownValue = newValue;
+                          });
+                        },
+                        items:_gastos
+                        .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                            );
+                        })
+                        .toList(),
+                      ),
+                    ),
+                    SizedBox(height: 15.0),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                        RaisedButton(
-                          onPressed: getImage,
-                          child: Text("Tomar Foto"),
-                          color: Colors.green[500],
-                        ),
-                        Text("  "),
-                        RaisedButton(
-                          onPressed: getImage,
-                          child: Text("Agregar"),
-                          color: Colors.green[500],
-                        ),
-                      ],)
-                    ),
-                    DropdownButton<String>(
-                      value: dropdownValue,
-                      icon: Icon(Icons.arrow_downward),
-                      iconSize: 24,
-                      elevation: 16,
-                      style: TextStyle(
-                        color: Colors.green[900]
+                          RaisedButton(
+                            onPressed: getImage,
+                            child: Text("Tomar Foto"),
+                            color: Colors.green[500],
+                          ),
+                        ],
                       ),
-                      underline: Container(
-                        height: 2,
-                        color: Colors.green[800],
-                      ),
-                      onChanged: (String newValue){
-                        setState(() {
-                          dropdownValue = newValue;
-                        });
-                      },
-                      items: <String> ['Comida', 'Trabajo', 'Estudios', 'Otros']
-                      .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                          );
-                      })
-                      .toList(),
                     ),
                     Align(
                       child: _image == null
                         ? new Text("")
                         : new Image.file(_image)
+                    ),
+                    Container(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          RaisedButton(
+                            onPressed: getImage,
+                            child: Text("Agregar al presupuesto"),
+                            color: Colors.green[500],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
