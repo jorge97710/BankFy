@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 //usuario y password
 String username = "bankfyc@gmail.com";
-String password = "bankfy2020";
+String password = "";
 
 class ContactScreen extends StatefulWidget {
   @override
