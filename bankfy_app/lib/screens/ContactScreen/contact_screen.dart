@@ -1,12 +1,13 @@
 
+//import 'package:bankfyapp/utilities/constants.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart'; //For creating the SMTP Server
 import 'package:flutter/material.dart';
 
 
 //usuario y password
-String username = "";
-String password = "";
+String username = "bankfyc@gmail.com";
+String password = "bankfy2020";
 
 class ContactScreen extends StatefulWidget {
   @override
@@ -15,17 +16,31 @@ class ContactScreen extends StatefulWidget {
 
 class _ContactScreen extends State<ContactScreen> {
 
+  var _sujeto;
+  var _contenindo;
+
+  final subjectController = new TextEditingController();
+  final contentController = new TextEditingController();
+
   // crear servidor
   final smtpServer = gmail(username, password);
-    
   
   Future sendMessage() async {
+
+    setState(() {
+      _sujeto = subjectController.text;
+      _contenindo = contentController.text;
+    });
+
+    print(_sujeto);
+    print(_contenindo);
+
     final message = Message()
     ..from = Address(username)
-    ..recipients.add('') //correo que va a recibir el mensaje
-    ..ccRecipients.addAll([username]) //cc los otros que lo van a recibir
-    ..subject = 'Test Flutter-Dart Mailer  :: 😀 :: ${DateTime.now()}' // Tema
-    ..text = 'Probando..1..2..3. De una recomiendo unos anime :P\n ---Haikyuu\n ---Psycho Pass\n ---Code Geass\n ---Fullmetal Alchemist Brotherhood\n ---Gundam Iron Blooded Orphans' //body of the email
+    ..recipients.add(username) //correo que va a recibir el mensaje
+    //..ccRecipients.addAll([username]) //cc los otros que lo van a recibir
+    ..subject = '$_sujeto: ${DateTime.now()}' // Tema
+    ..text = _contenindo //body of the email
     ;
 
     try {
@@ -35,6 +50,7 @@ class _ContactScreen extends State<ContactScreen> {
       print('Message not sent. \n'+ e.toString()); //print if the email is not sent
       // e.toString() will show why the email is not sending
     }
+    
 
   }
 
@@ -47,15 +63,38 @@ class _ContactScreen extends State<ContactScreen> {
           title: Text('Contacto'),
           backgroundColor: Colors.green[500],
         ),
-        body: Container(
-          alignment: Alignment.center,
-          child: SingleChildScrollView(
-            child: RaisedButton(
-                onPressed: sendMessage,
-                child: Text("Tomar Foto"),
-                color: Colors.blue[500]
-              ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+
+            Text(""),
+
+            TextField(
+              keyboardType: TextInputType.text,
+              controller: subjectController,
+              decoration: InputDecoration(
+                hintText: 'Sujeto'
+              )
             ),
+
+            TextField(
+              keyboardType: TextInputType.text,
+              controller: contentController,
+              decoration: InputDecoration(
+                hintText: 'Mensaje'
+              )
+            ),
+
+            Text(""),
+            Text(""),
+
+            RaisedButton(
+              onPressed: sendMessage,
+              child: Text("Enviar"),
+              color: Colors.green[500]
+            ),
+
+          ],
         ),
       ),
     );
