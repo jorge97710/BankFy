@@ -26,10 +26,11 @@ class DatabaseService {
     });
   }
 
-  Future updatePresupuestoData(String presupuesto, String periodo) async {
+  Future updatePresupuestoData(String presupuesto, String fechaInicio, String fechaFinal) async {
     return await presupuestoDataCollection.document(uid).setData({
       'presupuesto': double.parse(presupuesto),
-      'periodo': periodo
+      'fecha_inicio': fechaInicio,
+      'fecha_final': fechaFinal,
     });
   }
 

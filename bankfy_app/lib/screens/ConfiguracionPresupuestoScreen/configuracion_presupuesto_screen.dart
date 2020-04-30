@@ -1,11 +1,13 @@
 import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/screens/BudgetPlannerScreen/budget_planner_screen.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class ConfiguracionPresupuestoScreen extends StatefulWidget {
   @override
@@ -24,21 +26,20 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
   final presupuestoDelPeriodo = TextEditingController();
   final descripcionGasto = TextEditingController();
   final porcentajeGasto = TextEditingController();
+  final fechaInicio = TextEditingController();
+  final fechaFinal = TextEditingController();
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
 
-  List<DropdownMenuItem<String>> _dropDownMenuItems;
   List _periods = ["Semanal", "Quincenal", "Mensual"];
   List _gastos = [];
   List<double> _porcentajes = [];
-  String _currentPeriod;
+  String fechaValidator = '';
   bool revision = true;
 
   @override
   void initState() {
-    _dropDownMenuItems = getDropDownMenuItems();
-    _currentPeriod = _dropDownMenuItems[0].value;
     super.initState();
   }
 
@@ -54,12 +55,6 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
       ));
     }
     return items;
-  }
-
-  void changedDropDownItem(String selectedPeriod) {
-    setState(() {
-      _currentPeriod = selectedPeriod;
-    });
   }
 
   void deleteTile(int index) {
@@ -101,7 +96,11 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
     if (presupuesto != null) {
       if (presupuesto.data != null){
         if (presupuesto.data['presupuesto'] != null){
-          presupuestoDelPeriodo.text = presupuesto.data['presupuesto'].toStringAsFixed(2);  
+          presupuestoDelPeriodo.text = presupuesto.data['presupuesto'].toStringAsFixed(2);
+        }
+        if (presupuesto.data['fecha_inicio'] != null){
+          fechaInicio.text = presupuesto.data['fecha_inicio'].toString();
+          fechaFinal.text = presupuesto.data['fecha_final'].toString();
         }
       }
     }
@@ -282,8 +281,8 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          if (_formKey.currentState.validate() && _gastos.length != 0) {
-            await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), _currentPeriod);
+          if (_formKey.currentState.validate() && _gastos.length != 0 && DateFormat("dd-MM-yyyy", "es_GT").parse(fechaFinal.text).isAfter(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaInicio.text))) {
+            await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), fechaInicio.text, fechaFinal.text);
             await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
             presupuestoDelPeriodo.clear();
             descripcionGasto.clear();
@@ -293,6 +292,11 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
               MaterialPageRoute(builder: (context) => BudgetPlannerScreen()
               )
             );
+          }
+          else {
+            setState(() {
+              fechaValidator = 'Verifique que haya ingresado un gasto y las fechas tengan coherencia';
+            });
           }
         },
         padding: EdgeInsets.all(5.0),
@@ -412,68 +416,127 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                   horizontal: 40.0,
                   vertical: 50.0,
                 ),
-
-                  child: Column(
-                    children: <Widget>[
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Form(key: _formKey,child: Column(children: <Widget>[
-                          _buildPresupuestoInicialPeriodoTF(),
-                          SizedBox(height: 40.0),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
+                  children: <Widget>[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Form(
+                          key: _formKey,
+                          child: Column(
                             children: <Widget>[
-                              Text(
-                                'Periodo del presupuesto',
-                                style: kLabelStyle,
-                              ),
+                              _buildPresupuestoInicialPeriodoTF(),
+                              SizedBox(height: 40.0),
                               Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  SizedBox(height: 10.0),
-                                  Container(
-                                    alignment: Alignment.center,
-                                    child: new DropdownButton(
-                                      value: _currentPeriod,
-                                      items: _dropDownMenuItems,
-                                      onChanged: changedDropDownItem,
-                                    ),
+                                  Text(
+                                    'Periodo del presupuesto',
+                                    style: kLabelStyle,
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      SizedBox(height: 20.0),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: <Widget>[
+                                          Container(
+                                            constraints: BoxConstraints(minWidth: 100, maxWidth: 150),
+                                            alignment: Alignment.center,
+                                            child: Column(children: <Widget>[
+                                              Text(
+                                                'Fecha inicio',
+                                                style: kLabelStyle,
+                                              ),
+                                              DateTimeField(
+                                                format: DateFormat("dd-MM-yyyy"),
+                                                controller: fechaInicio,
+                                                onShowPicker: (context, currentValue) {
+                                                  return showDatePicker(
+                                                    context: context,
+                                                    firstDate: DateTime(1900),
+                                                    locale : const Locale('es','GT'),
+                                                    initialDate: currentValue ?? DateTime.now(),
+                                                    lastDate: DateTime(2100));
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            constraints: BoxConstraints(minWidth: 100, maxWidth: 150),
+                                            alignment: Alignment.center,
+                                            child: Column(children: <Widget>[
+                                              Text(
+                                                'Fecha final',
+                                                style: kLabelStyle,
+                                              ),
+                                              DateTimeField(
+                                                format: DateFormat("dd-MM-yyyy"),
+                                                controller: fechaFinal,
+                                                onShowPicker: (context, currentValue) {
+                                                  return showDatePicker(
+                                                    context: context,
+                                                    firstDate: DateTime(1900),
+                                                    locale : const Locale('es','GT'),
+                                                    initialDate: currentValue ?? DateTime.now(),
+                                                    lastDate: DateTime(2100));
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                          ],),),
-
-                          SizedBox(height: 30.0),
-                          Form(key: _formKey2,child: Column(children: <Widget>[
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        SizedBox(height: 30.0),
+                        Form(
+                          key: _formKey2,
+                          child: Column(
                             children: <Widget>[
-                            Text(
-                              'Gastos del presupuesto',
-                              style: kLabelStyle,
-                            ),
-                            _buildTFContainer(),
-                            for (var i = 0; i < _gastos.length; i++) ListTile(
-                              leading: Icon(Icons.delete),
-                              title: Text(_gastos[i]),
-                              subtitle: Text('Porcentaje de gasto: ' + _porcentajes[i].toString() + '%'),
-                              onTap: () => deleteTile(i),
-                            ),
-                            StreamProvider<QuerySnapshot>.value(
-                              value: DatabaseService().gastos,
-                                child: _buildSetGastoBtn(user),
-                            ),
-                            _buildSendBtn(user),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'Gastos del presupuesto',
+                                    style: kLabelStyle,
+                                  ),
+                                  _buildTFContainer(),
+                                  for (var i = 0; i < _gastos.length; i++) ListTile(
+                                    leading: Icon(Icons.delete),
+                                    title: Text(_gastos[i]),
+                                    subtitle: Text('Porcentaje de gasto: ' + _porcentajes[i].toString() + '%'),
+                                    onTap: () => deleteTile(i),
+                                  ),
+                                  StreamProvider<QuerySnapshot>.value(
+                                    value: DatabaseService().gastos,
+                                      child: _buildSetGastoBtn(user),
+                                  ),
+                                  Text(
+                                    fechaValidator,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14.0,
+                                    ),
+                                  ),
+                                  _buildSendBtn(user),
+                                ],
+                              ),
                             ],
                           ),
-                          ],),),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

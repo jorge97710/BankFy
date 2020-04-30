@@ -561,7 +561,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               color: Colors.red,
                               fontSize: 14.0,
-                              ),
+                            ),
                           ),
                           _buildLoginBtn(),
                           //_buildSignInWithText(),
