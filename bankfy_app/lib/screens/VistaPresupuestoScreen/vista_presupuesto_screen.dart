@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:getflutter/getflutter.dart';
 import 'package:sleek_circular_slider/sleek_circular_slider.dart';
 import 'package:bankfyapp/utilities/constants.dart';
-import 'dart:math';
 
 class VistaPresupuestoScreen extends StatefulWidget {
   @override
@@ -26,9 +25,11 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
   List _gastos;
   List<double> _porcentajes;
   String presupuesto1;
-  List _colores = [GFColors.DANGER, GFColors.INFO, GFColors.WARNING, GFColors.SUCCESS, GFColors.LIGHT];
+  List _colores = [];
   List _porcentajesUsados;
   List _gastadoActualmente;
+  List _gastoLimite;
+    Map<String, dynamic> _montosGastos;
 
   bool revision = true;
 
@@ -38,9 +39,11 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
     _porcentajes = [];
     _porcentajesUsados = [];
     _gastadoActualmente = [];
+    _gastoLimite = [];
     presupuesto1 = '0';
     super.initState();
     Future.delayed(Duration.zero,() {
+      obtenerMontosGastos(Provider.of<User>(context, listen: false));
       obtenerGastos(Provider.of<User>(context, listen: false));
       obtenerPresupuesto(Provider.of<User>(context, listen: false));
     });
@@ -83,15 +86,34 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
     if (gastos != null) {
       if (gastos.data != null){
         if (gastos.data['gasto'] != null){
+          var contador = 0;
+          double porcentajeLimite;
+          double gastoLimite;
+          double gastoUtilizado;
+          double porcentajeUsado;
           setState(() {
-            for (var i = 0; i < _gastos.length; i++){
-                double porcentajeLimite = _porcentajes[i];
-                double gastoLimite = double.parse(presupuesto1.toString()) * (porcentajeLimite / 100.0);
-                double gastoUtilizado = gastoLimite * Random().nextDouble();
-                double porcentajeUsado = gastoUtilizado * 100 /gastoLimite;
-                _porcentajesUsados.add(porcentajeUsado);
-                _gastadoActualmente.add(gastoUtilizado);
-            }      
+            _montosGastos.forEach((k,v) => {
+              porcentajeLimite = _porcentajes[contador],
+              gastoLimite = double.parse(presupuesto1.toString()) * (porcentajeLimite / 100.0),
+              gastoUtilizado = double.parse(v),
+              porcentajeUsado = gastoUtilizado * 100 /gastoLimite,
+              if(porcentajeUsado > 90){
+                _colores.add(GFColors.DANGER)
+              }
+              else if(porcentajeUsado > 70){
+                _colores.add(GFColors.WARNING)
+              }
+              else if(porcentajeUsado > 40){
+                _colores.add(GFColors.INFO)
+              }
+              else{
+                _colores.add(GFColors.SUCCESS)
+              },
+              _gastoLimite.add(gastoLimite),
+              _porcentajesUsados.add(porcentajeUsado),
+              _gastadoActualmente.add(gastoUtilizado),              
+              contador++
+            });   
           });
         }
       }
@@ -99,20 +121,13 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
   }
 
   Future obtenerMontosGastos(user) async {
-    var gastos = await DatabaseService(uid: user.uid).getMontosGastosData(); 
+    var montos = await DatabaseService(uid: user.uid).getMontosGastosData(); 
     // Se revisa si aun no se ha obtenido respuesta de Firebase
-    if (gastos != null) {
-      if (gastos.data != null){
-        if (gastos.data['gasto'] != null){
-          setState(() {
-            for( var gasto in gastos.data['gasto']){
-              _gastos.add(gasto);
-            }
-            for( var porcentaje in gastos.data['porcentaje']){
-              _porcentajes.add(porcentaje);
-            }        
-          });
-        }
+    if (montos != null) {
+      if (montos.data != null){
+        setState(() {
+          _montosGastos = montos.data;
+        });
       }
     }
   }
@@ -201,6 +216,11 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                               backgroundColor : Colors.black26,
                               progressBarColor: _colores[i],
                             ),
+                            SizedBox(height: 15.0),
+                            Text(
+                              'Cantidad presupuestada Q' + _gastoLimite[i].toStringAsFixed(2),
+                              style: kLabelStyle,                
+                            ),
                             SizedBox(height: 5.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -225,7 +245,7 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                                       SleekCircularSlider(
                                         min: 0,
                                         max: 100,
-                                        initialValue: _porcentajesUsados[i] - 1,
+                                        initialValue: _porcentajesUsados[i],
                                         appearance: CircularSliderAppearance(
                                           infoProperties: InfoProperties(
                                             bottomLabelText: 'Q' + _gastadoActualmente[i].toStringAsFixed(2),
@@ -250,7 +270,7 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
                                     ],
                                   ), 
                                 ),
-                                Container(
+                                if(_porcentajesUsados != null) Container(
                                   height: 230.0,
                                   width: 140.0,
                                   decoration: new BoxDecoration(
