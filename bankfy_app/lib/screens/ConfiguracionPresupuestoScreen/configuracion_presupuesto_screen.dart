@@ -284,13 +284,16 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
           if (_formKey.currentState.validate() && _gastos.length != 0 && DateFormat("dd-MM-yyyy", "es_GT").parse(fechaFinal.text).isAfter(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaInicio.text))) {
             await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), fechaInicio.text, fechaFinal.text);
             await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
+            List montos = [];
+            for(var i = 0; i < _gastos.length; i++){
+              montos.add(0);
+            }
+            await DatabaseService(uid: user.uid).updateMontosGastosData(_gastos, montos);
             presupuestoDelPeriodo.clear();
             descripcionGasto.clear();
             porcentajeGasto.clear();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => BudgetPlannerScreen()
-              )
+            Navigator.pop(
+              context
             );
           }
           else {

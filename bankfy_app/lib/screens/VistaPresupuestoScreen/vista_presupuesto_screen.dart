@@ -98,6 +98,25 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
     }
   }
 
+  Future obtenerMontosGastos(user) async {
+    var gastos = await DatabaseService(uid: user.uid).getMontosGastosData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (gastos != null) {
+      if (gastos.data != null){
+        if (gastos.data['gasto'] != null){
+          setState(() {
+            for( var gasto in gastos.data['gasto']){
+              _gastos.add(gasto);
+            }
+            for( var porcentaje in gastos.data['porcentaje']){
+              _porcentajes.add(porcentaje);
+            }        
+          });
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;

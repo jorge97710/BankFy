@@ -23,6 +23,7 @@ class _CamaraScreen extends State<CamaraScreen> {
   String dropdownValue = '';
   List<String> _gastos = [];
   bool revision = true;
+  Map<String, dynamic> _montosGastos;
   
   // Widget que define el componente del input del presupuesto inicial del periodo
   Widget _buildMontoTotalFacturaTF() {
@@ -90,6 +91,18 @@ class _CamaraScreen extends State<CamaraScreen> {
     }
   }
 
+  Future obtenerMontosGastos(user) async {
+    var montos = await DatabaseService(uid: user.uid).getMontosGastosData(); 
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (montos != null) {
+      if (montos.data != null){
+        setState(() {
+          _montosGastos = montos.data;
+        });
+      }
+    }
+  }
+
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
     setState(() {
@@ -145,6 +158,55 @@ class _CamaraScreen extends State<CamaraScreen> {
     return double.tryParse(s) != null;
   }
 
+  // Widget que define el componente para el boton de Send Presupuesto
+  Widget _buildSendBtn(user) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 25.0),
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          if (textoMontoTotalImagen.text != '') {
+            List gastos = [];
+            List montos = [];
+            _montosGastos.forEach((k,v) => {
+              if (k.toString() == dropdownValue.toString()) {
+                  gastos.add(k.toString()),
+                  montos.add((double.parse(v) + double.tryParse(textoMontoTotalImagen.text)).toString())
+              }
+              else{
+                  gastos.add(k.toString()),
+                  montos.add(v.toString())
+              }
+            });
+            await DatabaseService(uid: user.uid).updateMontosGastosData(gastos, montos);
+            textoMontoTotalImagen.clear();
+            Navigator.pop(
+              context
+            );          
+          }
+          else {
+
+          }
+        },
+        padding: EdgeInsets.all(5.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'Ingresar monto',
+          style: TextStyle(
+            color: Colors.black,
+            letterSpacing: 1.5,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User>(context);
@@ -167,6 +229,7 @@ class _CamaraScreen extends State<CamaraScreen> {
 
     if (revision) {
       obtenerGastos(user);
+      obtenerMontosGastos(user);
       revision = false;
     }
 
@@ -270,18 +333,7 @@ class _CamaraScreen extends State<CamaraScreen> {
                         ? new Text("")
                         : new Image.file(_image)
                     ),
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          RaisedButton(
-                            onPressed: getImage,
-                            child: Text("Agregar al presupuesto"),
-                            color: Colors.green[500],
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildSendBtn(user),
                   ],
                 ),
               ),

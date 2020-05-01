@@ -12,6 +12,8 @@ class DatabaseService {
 
   final CollectionReference presupuestoDataCollection = Firestore.instance.collection('presupuestos');
 
+  final CollectionReference montosGastosDataCollection = Firestore.instance.collection('montos');
+
   Future updateUserData(String nombre, String apellido) async {
     return await userDataCollection.document(uid).setData({
       'nombre': nombre,
@@ -34,12 +36,24 @@ class DatabaseService {
     });
   }
 
+  Future updateMontosGastosData(List gastos, List montos) async {
+    List<String> gasto = gastos.map((e) => e.toString()).toList();
+    List<String> monto = montos.map((e) => e.toString()).toList();
+
+    Map<String, String> map = Map.fromIterables(gasto, monto);
+    return await montosGastosDataCollection.document(uid).setData(map);
+  }
+
   Future getGastosData() async {
     return await gastosDataCollection.document(uid).get();
   }
 
   Future getPresupuestoData() async {
     return await presupuestoDataCollection.document(uid).get();
+  }
+
+  Future getMontosGastosData() async {
+    return await montosGastosDataCollection.document(uid).get();
   }
 
   // Obtener los datos del Usuario Stream
