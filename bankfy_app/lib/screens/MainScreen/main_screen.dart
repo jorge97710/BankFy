@@ -1,4 +1,4 @@
-// import 'package:bankfyapp/screens/LoginScreen/login_screen.dart';
+import 'package:bankfyapp/screens/EstadisticasScreen/estadisticas_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:bankfyapp/screens/MainScreen/texto_nombre_usuario.dart';
@@ -219,7 +219,7 @@ class _MainScreenState extends State<MainScreen> {
                         size: 45.0,
                       ),
                       'Presupuesto',
-                      BancosScreen(),
+                      EstadisticasScreen(),
                       Icon(
                         Icons.poll,
                         size: 45.0,

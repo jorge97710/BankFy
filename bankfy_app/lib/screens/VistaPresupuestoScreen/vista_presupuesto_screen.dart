@@ -97,6 +97,9 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
               gastoLimite = double.parse(presupuesto1.toString()) * (porcentajeLimite / 100.0),
               gastoUtilizado = double.parse(v),
               porcentajeUsado = gastoUtilizado * 100 /gastoLimite,
+              if(porcentajeUsado > 100){
+                porcentajeUsado = 100
+              },
               if(porcentajeUsado > 90){
                 _colores.add(GFColors.DANGER)
               }

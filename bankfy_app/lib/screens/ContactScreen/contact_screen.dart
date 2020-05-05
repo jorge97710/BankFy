@@ -44,14 +44,12 @@ class _ContactScreen extends State<ContactScreen> {
     ;
 
     try {
-    final sendReport = await send(message, smtpServer);
-    print('Message sent: ' + sendReport.toString()); //print if the email is sent
+      final sendReport = await send(message, smtpServer);
+      print('Message sent: ' + sendReport.toString()); //print if the email is sent
     } on MailerException catch (e) {
       print('Message not sent. \n'+ e.toString()); //print if the email is not sent
       // e.toString() will show why the email is not sending
     }
-    
-
   }
 
   @override
