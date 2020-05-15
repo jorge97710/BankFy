@@ -44,6 +44,10 @@ class DatabaseService {
     return await montosGastosDataCollection.document(uid).setData(map);
   }
 
+  Future getUserData() async {
+    return await userDataCollection.document(uid).get();
+  }
+
   Future getGastosData() async {
     return await gastosDataCollection.document(uid).get();
   }

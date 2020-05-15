@@ -1,12 +1,12 @@
 import 'package:bankfyapp/screens/EstadisticasScreen/estadisticas_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
-import 'package:bankfyapp/screens/MainScreen/texto_nombre_usuario.dart';
 import 'package:bankfyapp/screens/BancosScreen/bancos_screen.dart';
 import 'package:bankfyapp/screens/CamaraScreen/camara_screen.dart';
 import 'package:bankfyapp/screens/ContactScreen/contact_screen.dart';
 import 'package:bankfyapp/screens/BudgetPlannerScreen/budget_planner_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bankfyapp/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,6 +24,16 @@ class ScreenArguments {
 
 class _MainScreenState extends State<MainScreen> {
   final AuthService _auth = AuthService();
+  final nombreUsuario = TextEditingController();
+  bool revision = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero,() {
+      obtenerDatos(Provider.of<User>(context, listen: false));
+    });
+  }
 
   // Widget que define dos botones de redireccionamiento a una ruta especificada cada uno
   Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
@@ -161,10 +171,24 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  Future obtenerDatos(user) async {
+    var datos = await DatabaseService(uid: user.uid).getUserData();
+    // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (datos != null) {
+      if (datos.data != null){
+        if (datos.data['nombre'] != null){
+          setState(() {
+            nombreUsuario.text = datos.data['nombre'].toString(); 
+          });
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
-    // final user = Provider.of<User>(context);
+    final user = Provider.of<User>(context);
     void _showSettingsPanel() {
       showModalBottomSheet(context: context, builder: (context) { 
         return Container(
@@ -187,7 +211,14 @@ class _MainScreenState extends State<MainScreen> {
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
-          title: TextoNombreUsuario(),
+          title: Text(
+            'Bienvenido',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
           backgroundColor: Color(0xFF149414),
           elevation: 0.0,
           actions: <Widget>[

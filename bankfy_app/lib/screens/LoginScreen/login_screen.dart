@@ -24,6 +24,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showSignIn = true;
   String error = '';
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   // Funcion para cambiar la pantalla de Registro y la de Login
   void toggleView() {
     setState(() {
@@ -41,17 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Por favor ingrese un correo válido';
     else
       return null;
-  }
-
-  // Se hacer un dispose de los manejadores de inputs
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    email.dispose();
-    pass.dispose();
-    nombre.dispose();
-    apellido.dispose();
-    super.dispose();
   }
 
   // Widget que define el componente del input del email

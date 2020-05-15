@@ -18,6 +18,7 @@ class _TextoNombreUsuarioState extends State<TextoNombreUsuario> {
     // Se revisa si aun no se ha obtenido respuesta de Firebase
     if (datos != null) {
       nombre = datos.documents[0]['nombre'];
+      print(nombre);
     } else {
       nombre = '';    
     }
