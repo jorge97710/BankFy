@@ -7,6 +7,7 @@ import 'package:bankfyapp/services/auth.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:bankfyapp/screens/Agreement/agreement_dialog.dart' as fullDialog;
 import 'dart:async';
 import 'dart:io';
 
@@ -100,6 +101,20 @@ class _CamaraScreen extends State<CamaraScreen> {
           _montosGastos = montos.data;
         });
       }
+    }
+  }
+
+  Future _openAgreeDialog(context) async {
+    String result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) {
+          return fullDialog.CreateAgreement();
+        },
+        //true to display with a dismiss button rather than a return navigation arrow
+        fullscreenDialog: true));
+    if (result != null) {
+      getImage();
+    } else {
+      print('you could do another action here if they cancel');
     }
   }
 
@@ -321,7 +336,7 @@ class _CamaraScreen extends State<CamaraScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           RaisedButton(
-                            onPressed: getImage,
+                            onPressed: (){_openAgreeDialog(context);},
                             child: Text("Tomar Foto"),
                             color: Colors.green[500],
                           ),
