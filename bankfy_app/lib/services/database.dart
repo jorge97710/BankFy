@@ -14,6 +14,12 @@ class DatabaseService {
 
   final CollectionReference montosGastosDataCollection = Firestore.instance.collection('montos');
 
+  final CollectionReference historialResiduosDataCollection = Firestore.instance.collection('historialResiduos');
+
+  final CollectionReference historialGastosDataCollection = Firestore.instance.collection('historialGastos');
+
+  final CollectionReference historialMontosDataCollection = Firestore.instance.collection('historialMontos');
+
   Future updateUserData(String nombre, String apellido) async {
     return await userDataCollection.document(uid).setData({
       'nombre': nombre,
@@ -44,6 +50,24 @@ class DatabaseService {
     return await montosGastosDataCollection.document(uid).setData(map);
   }
 
+  Future updateHistorialResiduoData(String fecha, String historialResiduo) async {
+    return await historialResiduosDataCollection.document(uid).setData({
+      fecha : double.parse(historialResiduo)
+    }, merge: true);
+  }
+
+  Future updateHistorialGastosData(String fecha, List historialGastos) async {
+    return await historialGastosDataCollection.document(uid).setData({
+      fecha : historialGastos
+    }, merge: true);
+  }
+
+  Future updateHistorialMontosData(String fecha, List historialMontos) async {
+    return await historialMontosDataCollection.document(uid).setData({
+      fecha : historialMontos
+    }, merge: true);
+  }
+
   Future getUserData() async {
     return await userDataCollection.document(uid).get();
   }
@@ -58,6 +82,30 @@ class DatabaseService {
 
   Future getMontosGastosData() async {
     return await montosGastosDataCollection.document(uid).get();
+  }
+
+  Future getHistorialResiduosData() async {
+    return await historialResiduosDataCollection.document(uid).get();
+  }
+
+  Future getHistorialGastosData() async {
+    return await historialGastosDataCollection.document(uid).get();
+  }
+
+  Future getHistorialMontosData() async {
+    return await historialMontosDataCollection.document(uid).get();
+  }
+
+  Future deletePresupuestoData() async {
+    return await presupuestoDataCollection.document(uid).delete();
+  }
+
+  Future deleteGastosData() async {
+    return await gastosDataCollection.document(uid).delete();
+  }
+
+  Future deleteMontosGastosData() async {
+    return await montosGastosDataCollection.document(uid).delete();
   }
 
   // Obtener los datos del Usuario Stream

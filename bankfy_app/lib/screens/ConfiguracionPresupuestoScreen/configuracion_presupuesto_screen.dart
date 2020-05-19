@@ -4,6 +4,7 @@ import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bankfyapp/utilities/constants.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -275,12 +276,15 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
   // Widget que define el componente para el boton de Send Presupuesto
   Widget _buildSendBtn(user) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
+      padding: EdgeInsets.symmetric(vertical: 10.0),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          if (_formKey.currentState.validate() && _gastos.length != 0 && DateFormat("dd-MM-yyyy", "es_GT").parse(fechaFinal.text).isAfter(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaInicio.text))) {
+          var fechaHoy = new DateTime.now();
+          var formatHoy = DateFormat("dd-MM-yyyy", "es_GT");
+          String fechaStringHoy = formatHoy.format(fechaHoy);
+          if (_formKey.currentState.validate() && _gastos.length != 0 && DateFormat("dd-MM-yyyy", "es_GT").parse(fechaFinal.text).isAfter(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaInicio.text)) && DateFormat("dd-MM-yyyy", "es_GT").parse(fechaFinal.text).isAfter(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaStringHoy))) {
             await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), fechaInicio.text, fechaFinal.text);
             await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
             List montos = [];
@@ -296,9 +300,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
             );
           }
           else {
-            setState(() {
-              fechaValidator = 'Verifique que haya ingresado un gasto y las fechas tengan coherencia';
-            });
+            _showErrorIngresarPresupuesto();
           }
         },
         padding: EdgeInsets.all(5.0),
@@ -317,6 +319,115 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
           ),
         ),
       ),
+    );
+  }
+
+  // Widget que define el componente para el boton de Send Presupuesto
+  Widget _buildCloseBudgetBtn(user) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      width: double.infinity,
+      child: RaisedButton(
+        elevation: 5.0,
+        onPressed: () async {
+          var budget = await DatabaseService(uid: user.uid).getPresupuestoData();
+          if (budget != null) {
+            if (budget.data != null){
+              if (budget.data['presupuesto'] != null){
+                // Guardar los datos para el historial
+                var fecha = new DateTime.now();
+                var format = DateFormat("dd-MM-yyyy", "es_GT");
+                String fechaString = format.format(fecha);
+                var cantidadRestante = 100;
+                var fechaFinal = fechaString;
+                var gastos = ['Comida', 'Ropa'];
+                var montosRestantes = [45, 55];
+                print(fechaFinal);
+
+                fechaFinal = '20-05-2020';
+                await DatabaseService(uid: user.uid).updateHistorialResiduoData(fechaFinal, cantidadRestante.toString());
+                await DatabaseService(uid: user.uid).updateHistorialGastosData(fechaFinal, gastos);
+                await DatabaseService(uid: user.uid).updateHistorialMontosData(fechaFinal, montosRestantes);
+
+                // Eliminar los registros del presupuesto actual
+                // await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), fechaInicio.text, fechaFinal.text);
+                // await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
+                // List montos = [];
+                // for(var i = 0; i < _gastos.length; i++){
+                  // montos.add(0);
+                // }
+                // await DatabaseService(uid: user.uid).updateMontosGastosData(_gastos, montos);
+                presupuestoDelPeriodo.clear();
+                descripcionGasto.clear();
+                porcentajeGasto.clear();
+                Navigator.pop(
+                  context
+                );
+              }
+              else {
+                _showErrorSetPresupuesto();
+              }  
+            }
+            else {
+              _showErrorSetPresupuesto();
+            }
+          }
+          else {
+            _showErrorSetPresupuesto();
+          }
+        },
+        padding: EdgeInsets.all(5.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        color: Colors.white,
+        child: Text(
+          'Cerrar presupuesto actual',
+          style: TextStyle(
+            color: Colors.black,
+            letterSpacing: 1.5,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ),
+    );
+  }
+
+  _showErrorSetPresupuesto() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error - Presupuesto no activo"),
+        content: new Text("Primero debes tener un presupuesto activo antes de poder cerrar uno"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
+    );
+  }
+
+  _showErrorIngresarPresupuesto() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error en los datos"),
+        content: new Text("Asegurese de haber ingresado fechas correctas para el presupuesto, y al menos un gasto"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
     );
   }
 
@@ -521,15 +632,8 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
                                     value: DatabaseService().gastos,
                                       child: _buildSetGastoBtn(user),
                                   ),
-                                  Text(
-                                    fechaValidator,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 14.0,
-                                    ),
-                                  ),
                                   _buildSendBtn(user),
+                                  _buildCloseBudgetBtn(user),
                                 ],
                               ),
                             ],
