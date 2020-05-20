@@ -1,4 +1,6 @@
 import 'package:bankfyapp/models/user.dart';
+import 'package:bankfyapp/screens/Page/second_page.dart';
+import 'package:bankfyapp/screens/local_notifications_helper.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +10,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bankfyapp/screens/Agreement/agreement_dialog.dart' as fullDialog;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -25,6 +28,28 @@ class _CamaraScreen extends State<CamaraScreen> {
   List<String> _gastos = [];
   bool revision = true;
   Map<String, dynamic> _montosGastos;
+
+  final notifications = FlutterLocalNotificationsPlugin();
+
+  @override
+  void initState(){
+    super.initState();
+    final settingsAndroid = AndroidInitializationSettings('app_icon');
+    final settingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification: (id, title, body, payload) => onSelectedNotification(payload)
+    );
+
+    notifications.initialize(
+      InitializationSettings(settingsAndroid, settingsIOS),
+      onSelectNotification: onSelectedNotification
+    );
+  }
+
+  
+  Future onSelectedNotification(String payload) async => await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => SecondPage(payload: payload,))
+  );
   
   // Widget que define el componente del input del presupuesto inicial del periodo
   Widget _buildMontoTotalFacturaTF() {
@@ -338,6 +363,12 @@ class _CamaraScreen extends State<CamaraScreen> {
                           RaisedButton(
                             onPressed: (){_openAgreeDialog(context);},
                             child: Text("Tomar Foto"),
+                            color: Colors.green[500],
+                          ),
+
+                          RaisedButton(
+                            onPressed: () => showOngoingNotification(notifications, title: "Se hizo una transaccion", body: "Alguien ha visto Gundam? :V"),
+                            child: Text("Test Notificacion"),
                             color: Colors.green[500],
                           ),
                         ],

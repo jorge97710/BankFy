@@ -6,7 +6,7 @@ class SecondPage extends StatelessWidget {
   const SecondPage({
     @required this.payload,
     Key key,
-  }) : super(key: key);
+  }) : super(key:key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -15,7 +15,7 @@ class SecondPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            'Se hizo una transacción, mira tu budget',
+            'Verifica tu budget planner para ver la transacción',
             style: Theme.of(context).textTheme.title,
           ),
           const SizedBox(height: 8),
@@ -25,7 +25,7 @@ class SecondPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           RaisedButton(
-            child: Text('Back'),
+            child: Text('Regresar'),
             onPressed: () => Navigator.pop(context),
           ),
         ],
