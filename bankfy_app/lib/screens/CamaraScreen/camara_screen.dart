@@ -219,6 +219,7 @@ class _CamaraScreen extends State<CamaraScreen> {
               }
             });
             await DatabaseService(uid: user.uid).updateMontosGastosData(gastos, montos);
+            showOngoingNotification(notifications, title: "Se hizo una transaccion", body: "Revisa tu presupuesto para más información");
             textoMontoTotalImagen.clear();
             Navigator.pop(
               context
@@ -363,12 +364,6 @@ class _CamaraScreen extends State<CamaraScreen> {
                           RaisedButton(
                             onPressed: (){_openAgreeDialog(context);},
                             child: Text("Tomar Foto"),
-                            color: Colors.green[500],
-                          ),
-
-                          RaisedButton(
-                            onPressed: () => showOngoingNotification(notifications, title: "Se hizo una transaccion", body: "Alguien ha visto Gundam? :V"),
-                            child: Text("Test Notificacion"),
                             color: Colors.green[500],
                           ),
                         ],
