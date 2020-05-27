@@ -205,7 +205,7 @@ class _CamaraScreen extends State<CamaraScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
-          if (textoMontoTotalImagen.text != '') {
+          if (textoMontoTotalImagen.text != '' && isNumeric(textoMontoTotalImagen.text)) {
             List gastos = [];
             List montos = [];
             _montosGastos.forEach((k,v) => {
@@ -219,14 +219,16 @@ class _CamaraScreen extends State<CamaraScreen> {
               }
             });
             await DatabaseService(uid: user.uid).updateMontosGastosData(gastos, montos);
-            showOngoingNotification(notifications, title: "Se hizo una transaccion", body: "Revisa tu presupuesto para más información");
+            // Condiciones para determinar los porcentajes de uso de algun monto
+            
+            showOngoingNotification(notifications, title: "Se hizo una transacción", body: "Revisa tu presupuesto para más información");
             textoMontoTotalImagen.clear();
             Navigator.pop(
               context
             );          
           }
           else {
-
+            _showErrorSetMonto();
           }
         },
         padding: EdgeInsets.all(5.0),
@@ -245,6 +247,24 @@ class _CamaraScreen extends State<CamaraScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  _showErrorSetMonto() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error - Ingreso monto"),
+        content: new Text("El monto ingresado no es válido"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
     );
   }
 
