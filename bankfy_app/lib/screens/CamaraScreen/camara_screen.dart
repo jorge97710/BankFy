@@ -362,7 +362,7 @@ class _CamaraScreen extends State<CamaraScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           RaisedButton(
-                            onPressed: (){_openAgreeDialog(context);},
+                            onPressed: getImage,
                             child: Text("Tomar Foto"),
                             color: Colors.green[500],
                           ),

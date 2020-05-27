@@ -93,7 +93,7 @@ class _ContactScreen extends State<ContactScreen> {
         backgroundColor: Colors.green[50],
         appBar: AppBar(
           title: Text(
-            'Contacto',
+            'Contáctanos',
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
