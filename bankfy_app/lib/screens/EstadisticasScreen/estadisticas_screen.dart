@@ -6,6 +6,7 @@ import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class EstadisticasScreen extends StatefulWidget {
   @override
@@ -21,18 +22,44 @@ class ScreenArguments {
 
 class _EstadisticasScreenState extends State<EstadisticasScreen> {
   final AuthService _auth = AuthService();
-  var data = [];
+  List<TimeSeriesSales> data;
   bool revision = true;
 
   @override
   void initState() {
+    data = [];
     super.initState();
+    Future.delayed(Duration.zero,() {
+      obtenerHistorial(Provider.of<User>(context, listen: false));
+    });
   }
 
   Future obtenerHistorial(user) async {
-    var historial = await DatabaseService(uid: user.uid).getGastosData(); 
+    var historialResiduos = await DatabaseService(uid: user.uid).getHistorialResiduosData(); 
+    var historialGastos = await DatabaseService(uid: user.uid).getHistorialGastosData(); 
+    var historialMontos = await DatabaseService(uid: user.uid).getHistorialMontosData(); 
+    List<TimeSeriesSales> a = [];
     // Se revisa si aun no se ha obtenido respuesta de Firebase
+    if (historialResiduos != null && historialGastos != null && historialMontos != null) {
+      if (historialResiduos.data != null && historialGastos != null && historialMontos != null){
+        historialResiduos.data.forEach((k,v) => {
+          a.add(new TimeSeriesSales(DateFormat("dd-MM-yyyy", "es_GT").parse(k), v) )
+        });
+        historialGastos.data.forEach((k,v) => {
 
+        });
+        historialMontos.data.forEach((k,v) => {
+
+        });
+
+        // Ordenamiento
+        Comparator<TimeSeriesSales> fechasComparator = (a, b) => a.time.compareTo(b.time);
+        a.sort(fechasComparator);
+        setState(() {
+          data = a;
+        });
+      }
+    }
   }
 
   @override
@@ -44,12 +71,12 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
       revision = false;
     }
 
-    var data = [
-      new TimeSeriesSales(new DateTime(2017, 9, 19), -5),
-      new TimeSeriesSales(new DateTime(2017, 9, 26), 25),
-      new TimeSeriesSales(new DateTime(2017, 10, 3), 100),
-      new TimeSeriesSales(new DateTime(2017, 10, 10), 75),
-    ];
+    // var data = [
+    //   new TimeSeriesSales(new DateTime(2017, 9, 19), -5),
+    //   new TimeSeriesSales(new DateTime(2017, 9, 26), 25),
+    //   new TimeSeriesSales(new DateTime(2017, 10, 3), 100),
+    //   new TimeSeriesSales(new DateTime(2017, 10, 10), 75),
+    // ];
 
     var series = [
       new charts.Series<TimeSeriesSales, DateTime>(
@@ -156,7 +183,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 /// Sample time series data type.
 class TimeSeriesSales {
   final DateTime time;
-  final int sales;
+  final double sales;
 
   TimeSeriesSales(this.time, this.sales);
 }
