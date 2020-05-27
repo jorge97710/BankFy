@@ -1,3 +1,4 @@
+import 'package:animated_background/animated_background.dart';
 import 'package:bankfyapp/screens/EstadisticasScreen/estadisticas_screen.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
@@ -14,6 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../../main.dart';
+import '../local_notifications_helper.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -27,12 +29,15 @@ class ScreenArguments {
   ScreenArguments(this.usuario, this.contrasena);
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   final AuthService _auth = AuthService();
   final nombreUsuario = TextEditingController();
+  final apellidoUsuario = TextEditingController();
   bool revision = true;
   final notifications = FlutterLocalNotificationsPlugin();
-
+  AnimationController _controller;
+  Animation _animation;
+  CurvedAnimation _curve;
 
   @override
   void initState() {
@@ -50,6 +55,27 @@ class _MainScreenState extends State<MainScreen> {
       InitializationSettings(settingsAndroid, settingsIOS),
       onSelectNotification: onSelectedNotification
     );
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 5),
+    );
+
+    _curve = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _animation = Tween(
+      begin: 0.0,
+      end: 5.0,
+    ).animate(_curve);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    ///Don't forget to clean up resources when you are done using it
+    _controller.dispose();
+    super.dispose();
   }
 
   Future onSelectedNotification(String payload) async => await MyApp.navigatorKey.currentState.push(MaterialPageRoute(builder: (context) => VistaPresupuestoScreen()));
@@ -187,6 +213,24 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  _showErrorSetHistorial() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error - No existen historiales"),
+        content: new Text("Aún no has cerrado ningún presupuesto, por lo cual no tienes historiales ingresados aún"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
+    );
+  }
+
   // Widget que define un contenedor con capacidad de 2 botones horizontales
   Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
     return Padding(
@@ -235,6 +279,7 @@ class _MainScreenState extends State<MainScreen> {
         if (datos.data['nombre'] != null){
           setState(() {
             nombreUsuario.text = datos.data['nombre'].toString(); 
+            apellidoUsuario.text = datos.data['apellido'].toString(); 
           });
         }
       }
@@ -302,6 +347,8 @@ class _MainScreenState extends State<MainScreen> {
             await DatabaseService(uid: user.uid).deletePresupuestoData();
             await DatabaseService(uid: user.uid).deleteGastosData();
             await DatabaseService(uid: user.uid).deleteMontosGastosData();
+
+            showOngoingNotification(notifications, title: "Presupuesto cerrado", body: "Tu presupuesto ha llegado a su fecha fin y ha sido cerrado automáticamente");
           }
         }
         else {
@@ -318,25 +365,12 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
     final user = Provider.of<User>(context);
-    void _showSettingsPanel() {
-      showModalBottomSheet(context: context, builder: (context) { 
-        return Container(
-          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 60.0),
-          child: FlatButton.icon(
-            icon: Icon(Icons.person),
-            label: Text('Salir'),
-            onPressed: () async {
-              await _auth.signOut();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-              // Navigator.pop(context);
-            },
-          ), 
-        );
-      });
-    }
+    var budget;
+    var historial;
 
     if (revision) {
       // Se revisa cada vez que se pasa por esta Screen
+      obtenerDatos(user);
       revisarPresupuestoParaCerrar(user);
       revision = false;
     }
@@ -345,9 +379,129 @@ class _MainScreenState extends State<MainScreen> {
       value: DatabaseService().datos,
         child: Scaffold(
         backgroundColor: Colors.green[50],
+        drawer: Drawer(        
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              Container(
+                height: 130.0,
+                child: DrawerHeader(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Bienvenido ' + nombreUsuario.text +  ' ' + apellidoUsuario.text,
+                        style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF149414),
+                    // image: DecorationImage(
+                    //   fit: BoxFit.fill,
+                    //   image: AssetImage('assets/logos/cover.jpg'),
+                    // ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.monetization_on),
+                title: Text('Presupuestos'),
+                onTap: () => {Navigator.of(context).pop(), Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BudgetPlannerScreen()
+                    )
+                  )
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.party_mode),
+                title: Text('Escanéo de facturas'),
+                onTap: () async {
+                  budget = await DatabaseService(uid: user.uid).getPresupuestoData();
+                  if (budget != null) {
+                    if (budget.data != null){
+                      if (budget.data['presupuesto'] != null){
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CamaraScreen()
+                          )
+                        );                
+                      }
+                      else{
+                        _showErrorSetPresupuesto();
+                      }
+                    }
+                    else{
+                      _showErrorSetPresupuesto();
+                    }
+                  }
+                  else{
+                    _showErrorSetPresupuesto();
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.poll),
+                title: Text('Historial de presupuesto'),
+                onTap: () async {
+                  historial = await DatabaseService(uid: user.uid).getHistorialResiduosData();
+                  if (historial != null) {
+                    if (historial.data != null){
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => EstadisticasScreen()
+                        )
+                      );
+                    }
+                    else{
+                      _showErrorSetHistorial();
+                    }
+                  }
+                  else{
+                    _showErrorSetHistorial();
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.local_atm),
+                title: Text('Bancos'),
+                onTap: () => {Navigator.of(context).pop(), Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => BancosScreen()
+                    )
+                  )
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.message),
+                title: Text('Contáctanos'),
+                onTap: () => {Navigator.of(context).pop(), Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ContactScreen()
+                    )
+                  )
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.exit_to_app),
+                title: Text('Salir'),
+                onTap: () async {
+                  await _auth.signOut();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  // Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
           title: Text(
-            'Bienvenido',
+            'Bankfy',
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
@@ -356,71 +510,93 @@ class _MainScreenState extends State<MainScreen> {
           ),
           backgroundColor: Color(0xFF149414),
           elevation: 0.0,
-          actions: <Widget>[
-            FlatButton.icon(
-              icon: Icon(Icons.settings),
-              padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-              label: Text(''),
-              onPressed: () => _showSettingsPanel(),
-            ),
-          ],
         ),
-        body: Stack(
-          children: <Widget>[
-            Container(
-              height: double.infinity,
-              child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 40.0,
-                  vertical: 40.0,
+        body: AnimatedBackground(
+          behaviour: RandomParticleBehaviour(),
+          vsync: this,
+          child: Stack(
+            children: <Widget>[
+              Container(
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 40.0,
+                    vertical: 40.0,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(height: 100),
+                      FadeTransition(
+                        opacity: _animation,
+                        child: Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Bankfy',
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: Colors.grey[800],
+                                    fontWeight: FontWeight.w900,
+                                    fontStyle: FontStyle.italic,
+                                    fontFamily: 'Open Sans',
+                                    fontSize: 35),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      FadeTransition(
+                        opacity: _animation,
+                        child: Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Image.asset(
+                                'assets/logos/logo1.png',
+                                  height: 300,
+                                  width: 300,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      FadeTransition(
+                        opacity: _animation,
+                        child: Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Siempre contigo',
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: Colors.grey[800],
+                                    fontWeight: FontWeight.w900,
+                                    fontStyle: FontStyle.italic,
+                                    fontFamily: 'Open Sans',
+                                    fontSize: 35),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    _buildOptionButtonsContainer(
-                      BudgetPlannerScreen(),
-                      Icon(
-                        Icons.monetization_on,
-                        size: 45.0,
-                      ),
-                      'Presupuesto',
-                      EstadisticasScreen(),
-                      Icon(
-                        Icons.poll,
-                        size: 45.0,
-                      ),
-                      'Estadísticas'
-                    ),
-                    _buildOptionButtonsContainer2(
-                      CamaraScreen(),
-                      Icon(
-                        Icons.party_mode,
-                        size: 50.0,
-                      ),
-                      'Scaneo de Facturas',
-                      user
-                    ),
-                    _buildOptionButtonsContainer(
-                      BancosScreen(),
-                      Icon(
-                        //Icons.store,
-                        Icons.local_atm,
-                        size: 45.0,
-                      ),
-                      'Bancos',
-                      ContactScreen(),
-                      Icon(
-                        Icons.room,
-                        size: 45.0,
-                      ),
-                      'Consultas'
-                    ),
-                  ],
-                )
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

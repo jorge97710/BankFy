@@ -49,7 +49,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
     List<TimeSeriesSales> c = [];
     // Se revisa si aun no se ha obtenido respuesta de Firebase
     if (historialResiduos != null && historialGastos != null && historialMontos != null) {
-      if (historialResiduos.data != null && historialGastos != null && historialMontos != null){
+      if (historialResiduos.data != null && historialGastos.data != null && historialMontos.data != null){
         historialResiduos.data.forEach((k,v) => {
           a.add(new TimeSeriesSales(DateFormat("dd-MM-yyyy", "es_GT").parse(k), v) )
         });

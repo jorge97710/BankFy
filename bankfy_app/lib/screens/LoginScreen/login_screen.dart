@@ -1,4 +1,5 @@
 // import 'package:bankfyapp/screens/MainScreen/main_screen.dart';
+import 'package:animated_background/animated_background.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:bankfyapp/utilities/loading.dart';
@@ -11,7 +12,7 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   // Variables para poder manejar los textos y vistas de los inputs y ventana
   final email = TextEditingController();
   final pass = TextEditingController();
@@ -523,174 +524,154 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_showSignIn) {
       // Aqui se hace la ventana de Login
       return loading ? Loading() : Scaffold(
-        body: Stack(
-          children: <Widget>[
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF00AB08),
-                    Color(0xFF00C301),
-                    Color(0xFF26D701),
-                    Color(0xFF4DED30),
-                  ],
-                  stops: [0.1, 0.4, 0.7, 0.9]
-                )
+        backgroundColor: Color(0xFF149414),
+        body: AnimatedBackground(
+          behaviour: RandomParticleBehaviour(),
+          vsync: this,
+          child: Stack(
+            children: <Widget>[
+              Container(
+                height: double.infinity,
+                width: double.infinity,
               ),
-            ),
-            Container(
-              height: double.infinity,
-              child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 40.0,
-                  vertical: 120.0,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Bankfy',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'OpenSans',
-                        fontSize: 30.0,
-                        fontWeight: FontWeight.bold,
+              Container(
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 40.0,
+                    vertical: 120.0,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                    Image.asset(
+                        'assets/logos/logo1.png',
+                          height: 250,
+                          width: 250,
                       ),
-                    ),
-                    SizedBox(height: 30.0),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: <Widget>[
-                          _buildEmailTF(),
-                          SizedBox(height: 30.0),
-                          _buildPasswordTF(),
-                          SizedBox(height: 30.0),
-                          //_buildForgotPasswordBtn(),
-                          //_buildRememberMeCheckbox(),
-                          SizedBox(height: 5.0),
-                          Text(
-                            error,
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 14.0,
+                      SizedBox(height: 30.0),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            _buildEmailTF(),
+                            SizedBox(height: 30.0),
+                            _buildPasswordTF(),
+                            SizedBox(height: 30.0),
+                            //_buildForgotPasswordBtn(),
+                            //_buildRememberMeCheckbox(),
+                            SizedBox(height: 5.0),
+                            Text(
+                              error,
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 14.0,
+                              ),
                             ),
-                          ),
-                          _buildLoginBtn(),
-                          //_buildSignInWithText(),
-                          //_buildButonsSignIn(),
-                          _buildSingUpBtn(),
-                        ],
+                            _buildLoginBtn(),
+                            //_buildSignInWithText(),
+                            //_buildButonsSignIn(),
+                            _buildSingUpBtn(),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       );
     } else {
       // Aqui se hace la ventana de Registro
       return loading ? Loading() : Scaffold(
-        body: Stack(
-          children: <Widget>[
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF00AB08),
-                    Color(0xFF00C301),
-                    Color(0xFF26D701),
-                    Color(0xFF4DED30),
-                  ],
-                  stops: [0.1, 0.4, 0.7, 0.9]
-                )
+        backgroundColor: Color(0xFF149414),
+        body: AnimatedBackground(
+          behaviour: RandomParticleBehaviour(),
+          vsync: this,
+          child: Stack(
+            children: <Widget>[
+              Container(
+                height: double.infinity,
+                width: double.infinity,
               ),
-            ),
-            Container(
-              height: double.infinity,
-              child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 40.0,
-                  vertical: 120.0,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Registro',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'OpenSans',
-                        fontSize: 30.0,
-                        fontWeight: FontWeight.bold,
+              Container(
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 40.0,
+                    vertical: 120.0,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        'Registro',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontFamily: 'OpenSans',
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 30.0),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: <Widget>[
-                          _buildFirstNameUserTF(),
-                          SizedBox(height: 30.0),
-                          _buildLastNameUserTF(),
-                          SizedBox(height: 30.0),
-                          _buildEmailTF(),
-                          SizedBox(height: 30.0),
-                          _buildPasswordTF(),
-                          SizedBox(height: 30.0),
-                          CheckboxListTile(
-                            title: InkWell(
-                              child: Text(
-                                "He leído y acepto los términos y condiciones de uso",
-                                style: new TextStyle(fontWeight: FontWeight.bold),
+                      SizedBox(height: 30.0),
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            _buildFirstNameUserTF(),
+                            SizedBox(height: 30.0),
+                            _buildLastNameUserTF(),
+                            SizedBox(height: 30.0),
+                            _buildEmailTF(),
+                            SizedBox(height: 30.0),
+                            _buildPasswordTF(),
+                            SizedBox(height: 30.0),
+                            CheckboxListTile(
+                              title: InkWell(
+                                child: Text(
+                                  "He leído y acepto los términos y condiciones de uso",
+                                  style: new TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => CreateAgreement()
+                                    )
+                                  );
+                                },
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => CreateAgreement()
-                                  )
-                                );
+                              value: rememberMe,
+                              onChanged: (newValue) { 
+                                setState(() {
+                                  rememberMe = newValue; 
+                                }); 
                               },
+                              controlAffinity: ListTileControlAffinity.leading,  //  <-- leading Checkbox
                             ),
-                            value: rememberMe,
-                            onChanged: (newValue) { 
-                              setState(() {
-                                rememberMe = newValue; 
-                              }); 
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,  //  <-- leading Checkbox
-                          ),
-                          SizedBox(height: 5.0),
-                          Text(
-                            error,
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 14.0,
+                            SizedBox(height: 5.0),
+                            Text(
+                              error,
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 14.0,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 5.0),
-                          _buildRegisterBtn(),
-                          _buildBackSignInBtn(),
-                        ],
+                            SizedBox(height: 5.0),
+                            _buildRegisterBtn(),
+                            _buildBackSignInBtn(),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       );      
     }
