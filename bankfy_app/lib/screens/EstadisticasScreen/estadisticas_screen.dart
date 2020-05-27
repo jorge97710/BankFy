@@ -23,11 +23,18 @@ class ScreenArguments {
 class _EstadisticasScreenState extends State<EstadisticasScreen> {
   final AuthService _auth = AuthService();
   List<TimeSeriesSales> data;
+  List<TimeSeriesSales> data2;
   bool revision = true;
+  String dropdownValue = '';
+  List<String> _gastos = [];
+  List<String> _gastosNoLista = [];
+  List<TimeSeriesSales> dataGeneral;
 
   @override
   void initState() {
     data = [];
+    data2 = [];
+    dataGeneral = [];
     super.initState();
     Future.delayed(Duration.zero,() {
       obtenerHistorial(Provider.of<User>(context, listen: false));
@@ -39,6 +46,8 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
     var historialGastos = await DatabaseService(uid: user.uid).getHistorialGastosData(); 
     var historialMontos = await DatabaseService(uid: user.uid).getHistorialMontosData(); 
     List<TimeSeriesSales> a = [];
+    List<TimeSeriesSales> b = [];
+    List<TimeSeriesSales> c = [];
     // Se revisa si aun no se ha obtenido respuesta de Firebase
     if (historialResiduos != null && historialGastos != null && historialMontos != null) {
       if (historialResiduos.data != null && historialGastos != null && historialMontos != null){
@@ -46,37 +55,82 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
           a.add(new TimeSeriesSales(DateFormat("dd-MM-yyyy", "es_GT").parse(k), v) )
         });
         historialGastos.data.forEach((k,v) => {
-
+          setState(() {
+            for(var e in v){
+              if(!_gastos.contains(e[0].toString().toUpperCase()+e.toString().substring(1).toLowerCase())){
+                _gastos.add(e[0].toString().toUpperCase()+e.toString().substring(1).toLowerCase());
+              }
+              _gastosNoLista.add(e);
+            }   
+            dropdownValue = _gastos[0];   
+          })
         });
         historialMontos.data.forEach((k,v) => {
-
+          setState(() {
+            for (var i in v){
+              c.add(new TimeSeriesSales(DateFormat("dd-MM-yyyy", "es_GT").parse(k), i));
+              dataGeneral.add(new TimeSeriesSales(DateFormat("dd-MM-yyyy", "es_GT").parse(k), i));
+            }
+          })
         });
 
-        // Ordenamiento
+        // Ordenamiento general
         Comparator<TimeSeriesSales> fechasComparator = (a, b) => a.time.compareTo(b.time);
         a.sort(fechasComparator);
+
+        // Ordenamiento especifico
+        var indices = [];
+        var contador = 0;
+        for(var x in _gastosNoLista){
+          if(x.toLowerCase() == _gastos[0].toLowerCase()){
+            indices.add(contador);
+          }
+          contador++;
+        }
+
+        for(var y in indices){
+          b.add(c[y]);
+        }
+
+        b.sort(fechasComparator);
+
+        // Set Datos
         setState(() {
           data = a;
+          data2 = b;
         });
       }
     }
   }
 
+  changeGraph(){
+    Comparator<TimeSeriesSales> fechasComparator = (a, b) => a.time.compareTo(b.time);
+    List<TimeSeriesSales> b = [];
+    // Ordenamiento especifico
+    var indices = [];
+    var contador = 0;
+    for(var x in _gastosNoLista){
+      if(x.toLowerCase() == dropdownValue.toLowerCase()){
+        indices.add(contador);
+      }
+      contador++;
+    }
+
+    for(var y in indices){
+      b.add(dataGeneral[y]);
+    }
+
+    b.sort(fechasComparator);
+
+    // Set Datos
+    setState(() {
+      data2 = b;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<User>(context);
-
-    if (revision) {
-      obtenerHistorial(user);
-      revision = false;
-    }
-
-    // var data = [
-    //   new TimeSeriesSales(new DateTime(2017, 9, 19), -5),
-    //   new TimeSeriesSales(new DateTime(2017, 9, 26), 25),
-    //   new TimeSeriesSales(new DateTime(2017, 10, 3), 100),
-    //   new TimeSeriesSales(new DateTime(2017, 10, 10), 75),
-    // ];
 
     var series = [
       new charts.Series<TimeSeriesSales, DateTime>(
@@ -85,6 +139,16 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         domainFn: (TimeSeriesSales sales, _) => sales.time,
         measureFn: (TimeSeriesSales sales, _) => sales.sales,
         data: data,
+      )
+    ];
+
+    var series2 = [
+      new charts.Series<TimeSeriesSales, DateTime>(
+        id: 'Sales',
+        colorFn: (_, __) => charts.MaterialPalette.green.shadeDefault,
+        domainFn: (TimeSeriesSales sales, _) => sales.time,
+        measureFn: (TimeSeriesSales sales, _) => sales.sales,
+        data: data2,
       )
     ];
 
@@ -109,9 +173,35 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
       ],
     );
 
+    var chart2 =  new charts.TimeSeriesChart(
+      series2,
+      animate: true,
+      dateTimeFactory: const charts.LocalDateTimeFactory(),
+      behaviors: [
+        new charts.ChartTitle('Desempeño en ' + dropdownValue,
+            behaviorPosition: charts.BehaviorPosition.top,
+            titleOutsideJustification: charts.OutsideJustification.start,
+            innerPadding: 35),
+        new charts.ChartTitle('Fecha final del periodo',
+            behaviorPosition: charts.BehaviorPosition.bottom,
+            innerPadding: 20,
+            titleOutsideJustification:
+                charts.OutsideJustification.middleDrawArea),
+        new charts.ChartTitle('Superavit / Deficit',
+            behaviorPosition: charts.BehaviorPosition.start,
+            titleOutsideJustification:
+                charts.OutsideJustification.middleDrawArea),
+      ],
+    );
+
     var chartWidget = new SizedBox(
       height: 300.0,
       child: chart,
+    );
+
+    var chartWidget2 = new SizedBox(
+      height: 300.0,
+      child: chart2,
     );
 
     void _showSettingsPanel() {
@@ -169,6 +259,39 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     chartWidget,
+                    SizedBox(height: 30),
+                    Container(
+                      alignment: Alignment.center,
+                      child: DropdownButton<String>(
+                        value: dropdownValue,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(
+                          
+                          color: Colors.green[900]
+                        ),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.green[800],
+                        ),
+                        onChanged: (String newValue){
+                          setState(() {
+                            dropdownValue = newValue;
+                            changeGraph();
+                          });
+                        },
+                        items:_gastos
+                        .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                            );
+                        })
+                        .toList(),
+                      ),
+                    ),
+                    chartWidget2,
                   ],
                 ),
               ),
