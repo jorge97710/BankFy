@@ -5,6 +5,7 @@ import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:bankfyapp/models/user.dart';
 
 class BudgetPlannerScreen extends StatefulWidget {
   @override
@@ -22,7 +23,72 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
   final AuthService _auth = AuthService();
 
   // Widget que define un boton de redireccionamiento a una ruta especificada
-  Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
+  Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto, user) {
+    return GestureDetector(
+      child: Container(
+        height: 120.0,
+        width: 250.0,
+        margin: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+        decoration: BoxDecoration(
+          shape: BoxShape.rectangle,
+          color: Colors.green[500],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(0, 2),
+              blurRadius: 6.0,
+            ),
+          ],
+          // image: DecorationImage(
+          //   image: logo,
+          // )
+        ),
+        child: FlatButton(
+          onPressed: () async {
+            var budget = await DatabaseService(uid: user.uid).getPresupuestoData();
+            if (budget != null) {
+              if (budget.data != null){
+                if (budget.data['presupuesto'] != null){
+                  //await _auth.signOut();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => route
+                    )
+                  );                  
+                }
+                else{
+                  _showErrorSetPresupuesto();
+                }
+              }
+              else{
+                _showErrorSetPresupuesto();
+              }
+            }
+            else{
+              _showErrorSetPresupuesto();
+            }
+            //Navigator.pop(context);
+          },
+          padding: EdgeInsets.all(25.0),
+          child: Column( 
+            children: <Widget>[
+              icon,
+              Text(
+                texto,
+                style: new TextStyle(
+                  // fontSize: 10.0,
+                  // color: Colors.yellow,
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget que define un boton de redireccionamiento a una ruta especificada
+  Widget _buildBotonOpcion2(StatefulWidget route, Icon icon, String texto) {
     return GestureDetector(
       child: Container(
         height: 120.0,
@@ -49,7 +115,7 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
               context,
               MaterialPageRoute(builder: (context) => route
               )
-            );
+            );                  
             //Navigator.pop(context);
           },
           padding: EdgeInsets.all(25.0),
@@ -69,15 +135,51 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
       ),
     );
   }
+  
+  _showErrorSetPresupuesto() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error - Presupuesto no configurado"),
+        content: new Text("Primero debes tener un presupuesto configurado (Ir a Configuración de presupuesto)"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
+    );
+  }
 
   // Widget que define un contenedor para un unico boton horizontal
-  Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto) {
+  Widget _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, user) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 60.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           _buildBotonOpcion(
+            route,
+            icon,
+            texto,
+            user
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget que define un contenedor para un unico boton horizontal
+  Widget _buildOptionButtonsContainer2(StatefulWidget route, Icon icon, String texto) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 60.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          _buildBotonOpcion2(
             route,
             icon,
             texto
@@ -90,7 +192,7 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
-    // final user = Provider.of<User>(context);
+    final user = Provider.of<User>(context);
     void _showSettingsPanel() {
       showModalBottomSheet(context: context, builder: (context) { 
         return Container(
@@ -152,8 +254,9 @@ class _BudgetPlannerScreenState extends State<BudgetPlannerScreen> {
                         size: 45.0,
                       ),
                       'Presupuesto',
+                      user
                     ),
-                    _buildOptionButtonsContainer(
+                    _buildOptionButtonsContainer2(
                       ConfiguracionPresupuestoScreen(),
                       Icon(
                         Icons.build,

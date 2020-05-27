@@ -29,7 +29,7 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
   List _porcentajesUsados;
   List _gastadoActualmente;
   List _gastoLimite;
-    Map<String, dynamic> _montosGastos;
+  Map<String, dynamic> _montosGastos;
 
   bool revision = true;
 

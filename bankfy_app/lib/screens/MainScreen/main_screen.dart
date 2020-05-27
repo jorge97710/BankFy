@@ -85,7 +85,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   // Widget que define un boton de redireccionamiento a una ruta especificada
-  Widget _buildBotonOpcion2(StatefulWidget route, Icon icon, String texto) {
+  Widget _buildBotonOpcion2(StatefulWidget route, Icon icon, String texto, user) {
     return GestureDetector(
       child: Container(
         height: 120.0,
@@ -107,12 +107,28 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: FlatButton(
           onPressed: () async {
+            var budget = await DatabaseService(uid: user.uid).getPresupuestoData();
+            if (budget != null) {
+              if (budget.data != null){
+                if (budget.data['presupuesto'] != null){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => route
+                    )
+                  );                
+                }
+                else{
+                  _showErrorSetPresupuesto();
+                }
+              }
+              else{
+                _showErrorSetPresupuesto();
+              }
+            }
+            else{
+              _showErrorSetPresupuesto();
+            }
             //await _auth.signOut();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => route
-              )
-            );
             //Navigator.pop(context);
           },
           padding: EdgeInsets.all(25.0),
@@ -132,6 +148,26 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+
+  
+  _showErrorSetPresupuesto() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error - Presupuesto no configurado"),
+        content: new Text("Primero debes tener un presupuesto configurado (Ir a Presupuesto -> Configuración de presupuesto)"),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
+    );
+  }
+
   // Widget que define un contenedor con capacidad de 2 botones horizontales
   Widget  _buildOptionButtonsContainer(StatefulWidget route, Icon icon, String texto, StatefulWidget route2, Icon icon2, String texto2) {
     return Padding(
@@ -155,7 +191,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   // Widget que define un contenedor para un unico boton horizontal
-  Widget  _buildOptionButtonsContainer2(StatefulWidget route, Icon icon, String texto) {
+  Widget  _buildOptionButtonsContainer2(StatefulWidget route, Icon icon, String texto, user) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 30.0),
       child: Row(
@@ -164,7 +200,8 @@ class _MainScreenState extends State<MainScreen> {
           _buildBotonOpcion2(
             route,
             icon,
-            texto
+            texto,
+            user
           ),
         ],
       ),
@@ -263,7 +300,8 @@ class _MainScreenState extends State<MainScreen> {
                         Icons.party_mode,
                         size: 50.0,
                       ),
-                      'Scaneo de Facturas'
+                      'Scaneo de Facturas',
+                      user
                     ),
                     _buildOptionButtonsContainer(
                       BancosScreen(),

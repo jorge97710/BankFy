@@ -331,25 +331,64 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
         elevation: 5.0,
         onPressed: () async {
           var budget = await DatabaseService(uid: user.uid).getPresupuestoData();
-          if (budget != null) {
-            if (budget.data != null){
-              if (budget.data['presupuesto'] != null){
+          var gast = await DatabaseService(uid: user.uid).getGastosData(); 
+          var monts = await DatabaseService(uid: user.uid).getMontosGastosData(); 
+          if (budget != null && gast != null && monts != null) {
+            if (budget.data != null && gast.data != null && monts.data != null){
+              if (budget.data['presupuesto'] != null && gast.data['gasto'] != null){
                 // Guardar los datos para el historial
                 var fecha = new DateTime.now();
                 var format = DateFormat("dd-MM-yyyy", "es_GT");
                 String fechaString = format.format(fecha);
-                var cantidadRestante = 100;
-                var fechaFinal = fechaString;
-                var gastos = ['Comida', 'Ropa'];
-                var montosRestantes = [45, 55];
-                print(fechaFinal);
+                Map<String, dynamic> montadera;
 
-                fechaFinal = '20-05-2020';
-                await DatabaseService(uid: user.uid).updateHistorialResiduoData(fechaFinal, cantidadRestante.toString());
+                var contador = 0;
+                double porcentajeLimite;
+                double gastoLimite;
+                double gastoUtilizado;
+                String gastosHechos;
+                double cantidadRestante = 0.0; // = 100;
+                var fechaFinal = fechaString;
+                var gastos = []; // = ['Comida', 'Ropa'];
+                var montosRestantes = []; // = [45, 55];
+
+                // Procesamiento para historial
+                var cantidadInicial = budget.data['presupuesto'];
+                var gastadera = [];
+                var porcentajedera = [];
+                for(var gastar in gast.data['gasto']){
+                  gastadera.add(gastar);
+                }
+                for(var porcentaj in gast.data['porcentaje']){
+                  porcentajedera.add(porcentaj);
+                } 
+
+                montadera = monts.data;
+
+                montadera.forEach((k,v) => {
+                  porcentajeLimite = porcentajedera[contador],
+                  gastosHechos = gastadera[contador],
+                  gastoLimite = double.parse(cantidadInicial.toString()) * (porcentajeLimite / 100.0),
+                  gastoUtilizado = double.parse(v),
+                  montosRestantes.add(gastoLimite - gastoUtilizado),
+                  gastos.add(gastosHechos),          
+                  contador++
+                });
+
+                for (var i in montosRestantes){
+                  cantidadRestante = cantidadRestante + i;
+                }
+
+                // fechaFinal = '20-05-2020';
+                await DatabaseService(uid: user.uid).updateHistorialResiduoData(fechaFinal, cantidadRestante.toStringAsFixed(2));
                 await DatabaseService(uid: user.uid).updateHistorialGastosData(fechaFinal, gastos);
                 await DatabaseService(uid: user.uid).updateHistorialMontosData(fechaFinal, montosRestantes);
 
                 // Eliminar los registros del presupuesto actual
+                await DatabaseService(uid: user.uid).deletePresupuestoData();
+                await DatabaseService(uid: user.uid).deleteGastosData();
+                await DatabaseService(uid: user.uid).deleteMontosGastosData();
+
                 // await DatabaseService(uid: user.uid).updatePresupuestoData(presupuestoDelPeriodo.text.toString(), fechaInicio.text, fechaFinal.text);
                 // await DatabaseService(uid: user.uid).updateGastosData(_gastos, _porcentajes);
                 // List montos = [];
