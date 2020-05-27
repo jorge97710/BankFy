@@ -182,7 +182,7 @@ class _CamaraScreen extends State<CamaraScreen> {
       if (lst[i] == maximo && (i+1)<lst.length){
         setState(() {
           counter = lst[i] - lst[i+1];
-          textoMontoTotalImagen.text = counter.toString();
+          textoMontoTotalImagen.text = counter.toStringAsFixed(2);
         });
       }
     }

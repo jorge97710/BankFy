@@ -143,31 +143,26 @@ Credit & Contact Information
 
     return SafeArea(
       child: new Scaffold(
-        appBar: new AppBar(
+        appBar: AppBar(
+          title: Text(
+            'Terminos y Condiciones',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
           backgroundColor: Color(0xFF149414),
-          title: const Text('Agreement'),
-          actions: [
-            new FlatButton(
-              onPressed: () {
-                Navigator
-                .of(context)
-                .pop('User Agreed');
-              },
-              child: new Text('AGREE',
-              style: Theme
-                .of(context)
-                .textTheme
-                .subhead
-                .copyWith(color: Colors.white))),
-       ],
-   ),
-   backgroundColor: Colors.white,
-   body: SingleChildScrollView(
-     child: Padding(
-       padding: const EdgeInsets.all(8.0),
-       child: Text(pdfText),
-     ),
-   )));
+          elevation: 0.0,
+        ),
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(pdfText),
+          ),
+        )
+      )
+    );
   }
-
 }

@@ -2,6 +2,7 @@
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:bankfyapp/utilities/loading.dart';
+import 'package:bankfyapp/screens/Agreement/agreement_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool loading = false;
   bool _showSignIn = true;
   String error = '';
+  bool rememberMe = false;
 
   @override
   void initState() {
@@ -323,27 +325,32 @@ class _LoginScreenState extends State<LoginScreen> {
   // Widget que define el componente para el boton de Registro
   Widget _buildRegisterBtn() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
+      padding: EdgeInsets.symmetric(vertical: 5.0),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
         onPressed: () async {
           if (_formKey.currentState.validate()) {
-            setState(() {
-              loading = true;
-            });
-            dynamic result = await _auth.registerWithEmailAndPassword(email.text, pass.text, nombre.text, apellido.text);
-            if (result == null) {
+            if (rememberMe) {
               setState(() {
-                error = 'El correo ya está vinculado a una cuenta';
-                loading = false;
+                loading = true;
               });
-            } else {
-              email.clear();
-              pass.clear();
-              nombre.clear();
-              apellido.clear();
-              this.toggleView();
+              dynamic result = await _auth.registerWithEmailAndPassword(email.text, pass.text, nombre.text, apellido.text);
+              if (result == null) {
+                setState(() {
+                  error = 'El correo ya está vinculado a una cuenta';
+                  loading = false;
+                });
+              } else {
+                email.clear();
+                pass.clear();
+                nombre.clear();
+                apellido.clear();
+                this.toggleView();
+              }
+            }
+            else {
+              _showErrorAgreement();
             }
           }
         },
@@ -366,10 +373,27 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  _showErrorAgreement() {
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text("Error - Términos y Condiciones"),
+        content: new Text("Debes de aceptar los términos y condiciones para registrarte."),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      )
+    );
+  }
   // Widget que define el componente para el boton de Back to SignIN
   Widget _buildBackSignInBtn() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 25.0),
+      padding: EdgeInsets.symmetric(vertical: 5.0),
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
@@ -625,15 +649,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           _buildEmailTF(),
                           SizedBox(height: 30.0),
                           _buildPasswordTF(),
+                          SizedBox(height: 30.0),
+                          CheckboxListTile(
+                            title: InkWell(
+                              child: Text(
+                                "He leído y acepto los términos y condiciones de uso",
+                                style: new TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => CreateAgreement()
+                                  )
+                                );
+                              },
+                            ),
+                            value: rememberMe,
+                            onChanged: (newValue) { 
+                              setState(() {
+                                rememberMe = newValue; 
+                              }); 
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,  //  <-- leading Checkbox
+                          ),
                           SizedBox(height: 5.0),
                           Text(
                             error,
                             style: TextStyle(
                               color: Colors.red,
                               fontSize: 14.0,
-                              ),
+                            ),
                           ),
-                          SizedBox(height: 10.0),
+                          SizedBox(height: 5.0),
                           _buildRegisterBtn(),
                           _buildBackSignInBtn(),
                         ],
