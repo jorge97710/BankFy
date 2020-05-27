@@ -268,11 +268,11 @@ class _CamaraScreen extends State<CamaraScreen> {
                       porcentajeUsadoDespues = montitoDespues * 100 /gastoLimite,
                       
                       // Notificaciones
-                      if(porcentajeUsadoAntes < 100 && porcentajeUsadoDespues > 100){
+                      if(porcentajeUsadoAntes < 100 && porcentajeUsadoDespues == 100){
                         showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 100%")
-                      },
-                      if(porcentajeUsadoAntes < 90 && porcentajeUsadoDespues > 90){
-                        if(porcentajeUsadoDespues > 100){
+                      }
+                      else if(porcentajeUsadoAntes < 90 && porcentajeUsadoDespues > 90){
+                        if(porcentajeUsadoDespues == 100){
                           showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 100%")
                         }
                         else {

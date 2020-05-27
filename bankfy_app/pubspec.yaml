@@ -39,6 +39,7 @@ dependencies:
   charts_flutter: ^0.9.0
   mailer: ^3.0.4
   flutter_sparkline: ^0.1.0
+  cron: ^0.2.3
   
 
 dev_dependencies:
