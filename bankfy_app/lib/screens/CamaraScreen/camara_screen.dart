@@ -1,5 +1,4 @@
 import 'package:bankfyapp/models/user.dart';
-import 'package:bankfyapp/screens/Page/second_page.dart';
 import 'package:bankfyapp/screens/VistaPresupuestoScreen/vista_presupuesto_screen.dart';
 import 'package:bankfyapp/screens/local_notifications_helper.dart';
 import 'package:bankfyapp/services/database.dart';
@@ -10,7 +9,7 @@ import 'package:bankfyapp/services/auth.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:bankfyapp/utilities/constants.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:bankfyapp/screens/Agreement/agreement_dialog.dart' as fullDialog;
+// import 'package:bankfyapp/screens/Agreement/agreement_dialog.dart' as fullDialog;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'dart:io';
@@ -129,19 +128,19 @@ class _CamaraScreen extends State<CamaraScreen> {
     }
   }
 
-  Future _openAgreeDialog(context) async {
-    String result = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) {
-          return fullDialog.CreateAgreement();
-        },
-        //true to display with a dismiss button rather than a return navigation arrow
-        fullscreenDialog: true));
-    if (result != null) {
-      getImage();
-    } else {
-      print('you could do another action here if they cancel');
-    }
-  }
+  // Future _openAgreeDialog(context) async {
+  //   String result = await Navigator.of(context).push(MaterialPageRoute(
+  //       builder: (BuildContext context) {
+  //         return fullDialog.CreateAgreement();
+  //       },
+  //       //true to display with a dismiss button rather than a return navigation arrow
+  //       fullscreenDialog: true));
+  //   if (result != null) {
+  //     getImage();
+  //   } else {
+  //     print('you could do another action here if they cancel');
+  //   }
+  // }
 
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -240,7 +239,7 @@ class _CamaraScreen extends State<CamaraScreen> {
                   var contador = 0;
                   double porcentajeLimite;
                   double gastoLimite;
-                  double gastoUtilizado;
+                  // double gastoUtilizado;
                   double porcentajeUsadoAntes;
                   double porcentajeUsadoDespues;
                   String gastosHechos;

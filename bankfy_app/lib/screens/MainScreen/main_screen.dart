@@ -5,10 +5,15 @@ import 'package:bankfyapp/screens/BancosScreen/bancos_screen.dart';
 import 'package:bankfyapp/screens/CamaraScreen/camara_screen.dart';
 import 'package:bankfyapp/screens/ContactScreen/contact_screen.dart';
 import 'package:bankfyapp/screens/BudgetPlannerScreen/budget_planner_screen.dart';
+import 'package:bankfyapp/screens/VistaPresupuestoScreen/vista_presupuesto_screen.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bankfyapp/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
+import '../../main.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -26,6 +31,8 @@ class _MainScreenState extends State<MainScreen> {
   final AuthService _auth = AuthService();
   final nombreUsuario = TextEditingController();
   bool revision = true;
+  final notifications = FlutterLocalNotificationsPlugin();
+
 
   @override
   void initState() {
@@ -33,7 +40,19 @@ class _MainScreenState extends State<MainScreen> {
     Future.delayed(Duration.zero,() {
       obtenerDatos(Provider.of<User>(context, listen: false));
     });
+
+    final settingsAndroid = AndroidInitializationSettings('app_icon');
+    final settingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification: (id, title, body, payload) => onSelectedNotification(payload)
+    );
+
+    notifications.initialize(
+      InitializationSettings(settingsAndroid, settingsIOS),
+      onSelectNotification: onSelectedNotification
+    );
   }
+
+  Future onSelectedNotification(String payload) async => await MyApp.navigatorKey.currentState.push(MaterialPageRoute(builder: (context) => VistaPresupuestoScreen()));
 
   // Widget que define dos botones de redireccionamiento a una ruta especificada cada uno
   Widget _buildBotonOpcion(StatefulWidget route, Icon icon, String texto) {
@@ -222,6 +241,79 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  Future revisarPresupuestoParaCerrar(user) async {
+    var budget = await DatabaseService(uid: user.uid).getPresupuestoData();
+    var gast = await DatabaseService(uid: user.uid).getGastosData(); 
+    var monts = await DatabaseService(uid: user.uid).getMontosGastosData(); 
+    if (budget != null && gast != null && monts != null) {
+      if (budget.data != null && gast.data != null && monts.data != null){
+        if (budget.data['presupuesto'] != null && gast.data['gasto'] != null){
+          // Guardar los datos para el historial
+          var fecha = new DateTime.now();
+          var format = DateFormat("dd-MM-yyyy", "es_GT");
+          String fechaString = format.format(fecha);
+          String fechaLimiteString = budget.data['fecha_final']; 
+          Map<String, dynamic> montadera;
+
+          if (!(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaLimiteString).isAfter(DateFormat("dd-MM-yyyy", "es_GT").parse(fechaString)))){
+            var contador = 0;
+            double porcentajeLimite;
+            double gastoLimite;
+            double gastoUtilizado;
+            String gastosHechos;
+            double cantidadRestante = 0.0; // = 100;
+            var fechaFinal = fechaLimiteString;
+            var gastos = []; // = ['Comida', 'Ropa'];
+            var montosRestantes = []; // = [45, 55];
+
+            // Procesamiento para historial
+            var cantidadInicial = budget.data['presupuesto'];
+            var gastadera = [];
+            var porcentajedera = [];
+            for(var gastar in gast.data['gasto']){
+              gastadera.add(gastar);
+            }
+            for(var porcentaj in gast.data['porcentaje']){
+              porcentajedera.add(porcentaj);
+            } 
+
+            montadera = monts.data;
+
+            montadera.forEach((k,v) => {
+              porcentajeLimite = porcentajedera[contador],
+              gastosHechos = gastadera[contador],
+              gastoLimite = double.parse(cantidadInicial.toString()) * (porcentajeLimite / 100.0),
+              gastoUtilizado = double.parse(v),
+              montosRestantes.add(gastoLimite - gastoUtilizado),
+              gastos.add(gastosHechos),          
+              contador++
+            });
+
+            for (var i in montosRestantes){
+              cantidadRestante = cantidadRestante + i;
+            }
+
+            // fechaFinal = '20-05-2020';
+            await DatabaseService(uid: user.uid).updateHistorialResiduoData(fechaFinal, cantidadRestante.toStringAsFixed(2));
+            await DatabaseService(uid: user.uid).updateHistorialGastosData(fechaFinal, gastos);
+            await DatabaseService(uid: user.uid).updateHistorialMontosData(fechaFinal, montosRestantes);
+
+            // Eliminar los registros del presupuesto actual
+            await DatabaseService(uid: user.uid).deletePresupuestoData();
+            await DatabaseService(uid: user.uid).deleteGastosData();
+            await DatabaseService(uid: user.uid).deleteMontosGastosData();
+          }
+        }
+        else {
+        }  
+      }
+      else {
+      }
+    }
+    else {
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // final ScreenArguments args = ModalRoute.of(context).settings.arguments;
@@ -241,6 +333,12 @@ class _MainScreenState extends State<MainScreen> {
           ), 
         );
       });
+    }
+
+    if (revision) {
+      // Se revisa cada vez que se pasa por esta Screen
+      revisarPresupuestoParaCerrar(user);
+      revision = false;
     }
 
     return StreamProvider<QuerySnapshot>.value(

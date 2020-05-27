@@ -1,4 +1,3 @@
-/// Timeseries chart example
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:bankfyapp/services/auth.dart';
@@ -130,7 +129,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<User>(context);
+    // final user = Provider.of<User>(context);
 
     var series = [
       new charts.Series<TimeSeriesSales, DateTime>(
@@ -166,7 +165,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
             innerPadding: 20,
             titleOutsideJustification:
                 charts.OutsideJustification.middleDrawArea),
-        new charts.ChartTitle('Superavit / Deficit',
+        new charts.ChartTitle('Monto ahorrado',
             behaviorPosition: charts.BehaviorPosition.start,
             titleOutsideJustification:
                 charts.OutsideJustification.middleDrawArea),
@@ -187,7 +186,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
             innerPadding: 20,
             titleOutsideJustification:
                 charts.OutsideJustification.middleDrawArea),
-        new charts.ChartTitle('Superavit / Deficit',
+        new charts.ChartTitle('Monto ahorrado',
             behaviorPosition: charts.BehaviorPosition.start,
             titleOutsideJustification:
                 charts.OutsideJustification.middleDrawArea),
@@ -260,6 +259,21 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                   children: <Widget>[
                     chartWidget,
                     SizedBox(height: 30),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Escoge algún gasto',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'OpenSans',
+                            fontSize: 18
+                          ),
+                        ),
+                        SizedBox(height: 10.0),
+                      ],
+                    ),
                     Container(
                       alignment: Alignment.center,
                       child: DropdownButton<String>(
