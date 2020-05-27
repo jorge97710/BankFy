@@ -15,6 +15,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'dart:io';
 
+import '../../main.dart';
+
 class CamaraScreen extends StatefulWidget {
   @override
   _CamaraScreen createState() => new _CamaraScreen();
@@ -47,10 +49,7 @@ class _CamaraScreen extends State<CamaraScreen> {
   }
 
   
-  Future onSelectedNotification(String payload) async => await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => VistaPresupuestoScreen())
-  );
+  Future onSelectedNotification(String payload) async => await MyApp.navigatorKey.currentState.push(MaterialPageRoute(builder: (context) => VistaPresupuestoScreen()));
   
   // Widget que define el componente del input del presupuesto inicial del periodo
   Widget _buildMontoTotalFacturaTF() {

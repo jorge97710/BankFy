@@ -31,6 +31,7 @@ NotificationDetails get _ongoing {
     priority: Priority.High,
     ongoing: false,
     autoCancel: true,
+    styleInformation: BigTextStyleInformation('')
   );
   final iOSChannelSpecifics = IOSNotificationDetails();
   return NotificationDetails(androidChannelSpecifics, iOSChannelSpecifics);
