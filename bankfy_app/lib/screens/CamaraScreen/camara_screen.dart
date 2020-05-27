@@ -1,5 +1,6 @@
 import 'package:bankfyapp/models/user.dart';
 import 'package:bankfyapp/screens/Page/second_page.dart';
+import 'package:bankfyapp/screens/VistaPresupuestoScreen/vista_presupuesto_screen.dart';
 import 'package:bankfyapp/screens/local_notifications_helper.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -48,7 +49,7 @@ class _CamaraScreen extends State<CamaraScreen> {
   
   Future onSelectedNotification(String payload) async => await Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => SecondPage(payload: payload,))
+    MaterialPageRoute(builder: (context) => VistaPresupuestoScreen())
   );
   
   // Widget que define el componente del input del presupuesto inicial del periodo
@@ -208,20 +209,112 @@ class _CamaraScreen extends State<CamaraScreen> {
           if (textoMontoTotalImagen.text != '' && isNumeric(textoMontoTotalImagen.text)) {
             List gastos = [];
             List montos = [];
+            String gastito = '';
+            double montitoAntes = 0.0;
+            double montitoDespues = 0.0;
             _montosGastos.forEach((k,v) => {
               if (k.toString() == dropdownValue.toString()) {
                   gastos.add(k.toString()),
-                  montos.add((double.parse(v) + double.tryParse(textoMontoTotalImagen.text)).toString())
+                  montos.add((double.parse(v) + double.tryParse(textoMontoTotalImagen.text)).toString()),
+                  gastito = k.toString(),
+                  montitoAntes = double.parse(v),
+                  montitoDespues = double.parse(v) + double.tryParse(textoMontoTotalImagen.text)
               }
               else{
                   gastos.add(k.toString()),
                   montos.add(v.toString())
               }
             });
+
+            // Se hace update del monto
             await DatabaseService(uid: user.uid).updateMontosGastosData(gastos, montos);
             // Condiciones para determinar los porcentajes de uso de algun monto
-            
-            showOngoingNotification(notifications, title: "Se hizo una transacción", body: "Revisa tu presupuesto para más información");
+            var budget = await DatabaseService(uid: user.uid).getPresupuestoData();
+            var gast = await DatabaseService(uid: user.uid).getGastosData(); 
+            var monts = await DatabaseService(uid: user.uid).getMontosGastosData(); 
+
+            if (budget != null && gast != null && monts != null) {
+              if (budget.data != null && gast.data != null && monts.data != null){
+                if (budget.data['presupuesto'] != null && gast.data['gasto'] != null){
+                  // Obtenemos los montos
+                  Map<String, dynamic> montadera;
+                  var contador = 0;
+                  double porcentajeLimite;
+                  double gastoLimite;
+                  double gastoUtilizado;
+                  double porcentajeUsadoAntes;
+                  double porcentajeUsadoDespues;
+                  String gastosHechos;
+
+                  // Procesamiento para historial
+                  var cantidadInicial = budget.data['presupuesto'];
+                  var gastadera = [];
+                  var porcentajedera = [];
+                  for(var gastar in gast.data['gasto']){
+                    gastadera.add(gastar);
+                  }
+                  for(var porcentaj in gast.data['porcentaje']){
+                    porcentajedera.add(porcentaj);
+                  } 
+
+                  montadera = monts.data;
+
+                  montadera.forEach((k,v) => {
+                    if (k.toString() == gastito) {
+                      // Logica para mandar notificaciones
+                      porcentajeLimite = porcentajedera[contador],
+                      gastosHechos = gastadera[contador],
+                      gastoLimite = double.parse(cantidadInicial.toString()) * (porcentajeLimite / 100.0),
+                      porcentajeUsadoAntes = montitoAntes * 100 /gastoLimite,   
+                      porcentajeUsadoDespues = montitoDespues * 100 /gastoLimite,
+                      
+                      // Notificaciones
+                      if(porcentajeUsadoAntes < 100 && porcentajeUsadoDespues > 100){
+                        showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 100%")
+                      },
+                      if(porcentajeUsadoAntes < 90 && porcentajeUsadoDespues > 90){
+                        if(porcentajeUsadoDespues > 100){
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 100%")
+                        }
+                        else {
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 90%")
+                        }
+                      }
+                      else if(porcentajeUsadoAntes < 70 && porcentajeUsadoDespues > 70){
+                        if(porcentajeUsadoDespues > 100){
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 100%")
+                        }
+                        else if (porcentajeUsadoDespues > 90) {
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 90%")
+                        }
+                        else {
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 70%")
+                        }
+                      }
+                      else if(porcentajeUsadoAntes < 50 && porcentajeUsadoDespues > 50){
+                        if(porcentajeUsadoDespues > 100){
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 100%")
+                        }
+                        else if (porcentajeUsadoDespues > 90) {
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 90%")
+                        }
+                        else if (porcentajeUsadoDespues > 70) {
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 70%")
+                        }
+                        else {
+                          showOngoingNotification(notifications, title: "Alerta", body: "Acabas de sobrepasar tu presupuesto de " + gastosHechos + " en un 50%")
+                        }
+                      }
+                      else{
+                        showOngoingNotification(notifications, title: "Tu gasto ha sido ingresado con éxito", body: "Revisa tu presupuesto para más información")
+                      },
+                    },
+                    contador++,
+                  });
+                }  
+              }
+            }
+            // showOngoingNotification(notifications, title: "Se hizo una transacción", body: "Revisa tu presupuesto para más información");
             textoMontoTotalImagen.clear();
             Navigator.pop(
               context
