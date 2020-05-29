@@ -1,5 +1,6 @@
 import 'package:animated_background/animated_background.dart';
 import 'package:bankfyapp/screens/EstadisticasScreen/estadisticas_screen.dart';
+import 'package:bankfyapp/screens/ListaBancos/lista_bancos.dart';
 import 'package:bankfyapp/services/auth.dart';
 import 'package:bankfyapp/services/database.dart';
 import 'package:bankfyapp/screens/BancosScreen/bancos_screen.dart';
@@ -471,7 +472,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 title: Text('Bancos'),
                 onTap: () => {Navigator.of(context).pop(), Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => BancosScreen()
+                    MaterialPageRoute(builder: (context) => ListaB()
                     )
                   )
                 },
@@ -561,8 +562,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             children: <Widget>[
                               Image.asset(
                                 'assets/logos/logo1.png',
-                                  height: 300,
-                                  width: 300,
+                                  height: 280,
+                                  width: 280,
                               )
                             ],
                           ),
