@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:bankfyapp/services/auth.dart';
+import 'package:bankfyapp/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() => runApp(bantrab());
 
 class bantrab extends StatelessWidget {
+  final AuthService _auth = AuthService();
+
   @override
   Widget build(BuildContext context) {
     Widget titleSection = Container(
@@ -98,12 +104,47 @@ class bantrab extends StatelessWidget {
       )
     );
 
-    return MaterialApp(
-      title: 'Bantrab',
-      home: Scaffold(
+    void _showSettingsPanel() {
+      showModalBottomSheet(context: context, builder: (context) { 
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 60.0),
+          child: FlatButton.icon(
+            icon: Icon(Icons.person),
+            label: Text('Salir'),
+            onPressed: () async {
+              await _auth.signOut();
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              //Navigator.pop(context);
+            },
+          ), 
+        );
+      });
+    }
+
+    return StreamProvider<QuerySnapshot>.value(
+      value: DatabaseService().datos,
+        child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Text('Bantrab'),
-          backgroundColor: Colors.green,
+          iconTheme: IconThemeData(color: Colors.black),
+          title: Text(
+            'Bantrab',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          backgroundColor: Color(0xFF149414),
+          elevation: 0.0,
+          actions: <Widget>[
+            FlatButton.icon(
+              icon: Icon(Icons.settings),
+              padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+              label: Text(''),
+              onPressed: () => _showSettingsPanel(),
+            ),
+          ],
         ),
         body: ListView(
           children: [

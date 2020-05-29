@@ -539,6 +539,7 @@ class _ConfiguracionPresupuestoScreenState extends State<ConfiguracionPresupuest
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
           title: Text(
             'Configuración de presupuesto',
             style: TextStyle(

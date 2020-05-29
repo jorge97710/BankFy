@@ -144,6 +144,7 @@ Credit & Contact Information
     return SafeArea(
       child: new Scaffold(
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
           title: Text(
             'Terminos y Condiciones',
             style: TextStyle(

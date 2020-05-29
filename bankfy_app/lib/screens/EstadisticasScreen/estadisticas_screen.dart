@@ -225,6 +225,7 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
           title: Text(
             'Estadisticas de desempeño',
             style: TextStyle(

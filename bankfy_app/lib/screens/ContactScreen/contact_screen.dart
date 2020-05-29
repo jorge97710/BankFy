@@ -92,6 +92,7 @@ class _ContactScreen extends State<ContactScreen> {
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
           title: Text(
             'Contáctanos',
             style: TextStyle(

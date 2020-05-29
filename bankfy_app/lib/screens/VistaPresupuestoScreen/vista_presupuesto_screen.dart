@@ -161,6 +161,7 @@ class _VistaPresupuestoScreenState extends State<VistaPresupuestoScreen> {
         child: Scaffold(
         backgroundColor: Colors.green[50],
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
           title: Text(
             'Mi Presupuesto',
             style: TextStyle(
